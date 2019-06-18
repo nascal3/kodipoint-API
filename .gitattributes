@@ -1,0 +1,5 @@
+ 
+# Files that are going to be encrypted
+ .env filter=git-crypt diff=git-crypt
+ # DON'T TOUCH THE LINE AND ONE BELOW
+ .gitattributes !filter !diff
