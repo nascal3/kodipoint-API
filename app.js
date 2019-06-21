@@ -13,6 +13,11 @@ let server = null;
 sequelize.sync().then(result => {
     const port = process.env.PORT || 80 ;
     server = app.listen( port, console.log(`listening to port ${port}`));
+
+    console.log('DB_HOST -->', process.env.DB_HOST);
+    console.log('DB_USER -->', process.env.DB_USER);
+    console.log('DB_PASSWORD -->', process.env.DB_PASSWORD);
+    console.log('DB_HOST -->', process.env.DB_HOST);
 }).catch( err => {
     console.error('Error occurred: ',err.name, '<===> Message: ',err.message);
 });
