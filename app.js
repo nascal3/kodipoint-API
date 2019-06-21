@@ -1,21 +1,20 @@
 require('dotenv').config();
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const app = express();
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// CALL TO DB CONNECTION FOLDER
+const sequelize = require('./startup/db');
 
-var app = express();
+// CALL TO ROUTES FOLDER
+require('./startup/routes')(app);
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+// CREATE TABLES IF THEY DON'T EXIST
+let server = null;
+sequelize.sync().then(result => {
+    const port = process.env.PORT || 80 ;
+    server = app.listen( port, console.log(`listening to port ${port}`));
+}).catch( err => {
+    console.error('Error occurred: ',err.name, '<===> Message: ',err.message);
+});
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-module.exports = app;
+module.exports = server;
