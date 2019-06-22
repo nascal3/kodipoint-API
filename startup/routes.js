@@ -1,9 +1,10 @@
 const express = require('express');
 const users = require('../routes/users');
-const index = require('../routes/index');
 
-module.exports = function (app) {
+// const home = require('../routes/home');
+
+module.exports = (app) => {
   app.use(express.json());
   app.use('/api/users', users);
-  app.use('/', index);
+  app.use(express.static(__dirname + 'public'));
 };
