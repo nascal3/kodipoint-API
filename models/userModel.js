@@ -7,7 +7,7 @@ const userModel = sequelize.define('User', {
       primaryKey: true,
       autoIncrement: true,
     },
-    user_email: {
+    email: {
       type:Sequelize.STRING(50),
       allowNull: false
     },
@@ -23,8 +23,8 @@ const userModel = sequelize.define('User', {
   {
       indexes:[
           {
-              unique: false,
-              fields:['id', 'user_email']
+              unique: true,
+              fields:['id', 'email']
           }
       ]
   });
