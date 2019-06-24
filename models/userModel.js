@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../startup/db');
+const roleModel = require('./roleModel');
 
 const userModel = sequelize.define('user', {
     id: {
@@ -13,6 +14,10 @@ const userModel = sequelize.define('user', {
     },
     role: {
       type:Sequelize.INTEGER,
+      references: {
+          model: roleModel,
+          key: role_nos
+      },
       allowNull: false
     },
     user_password: {
