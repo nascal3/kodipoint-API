@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../startup/db');
 const userModel = require('./userModel');
 
-const tenantModel = sequelize.define('tenant', {
+const landlordModel = sequelize.define('landlord', {
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
@@ -14,7 +14,7 @@ const tenantModel = sequelize.define('tenant', {
             model: userModel,
             key: id
         },
-        allowNull: true
+        allowNull: false
     },
     name: {
         type:Sequelize.STRING(50),
@@ -28,27 +28,31 @@ const tenantModel = sequelize.define('tenant', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    property_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-    },
-    property_name: {
+    kra_pin: {
         type: Sequelize.STRING,
         allowNull: false
-    },
-    unit_no: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    landlord_id: {
-      type:Sequelize.INTEGER,
-      allowNull: false
-    },
-    move_in_date: {
-      type:Sequelize.DATE,
-      allowNull: false
     },
     phone: {
+        type: Sequelize.STRING(30),
+        allowNull: false
+    },
+    bank_name: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    bank_branch: {
+      type:Sequelize.STRING,
+      allowNull: false
+    },
+    bank_acc: {
+      type:Sequelize.STRING,
+      allowNull: false
+    },
+    bank_swift: {
+        type:Sequelize.STRING,
+        allowNull: true
+    },
+    bank_currency: {
         type:Sequelize.STRING,
         allowNull: true
     },
@@ -66,4 +70,4 @@ const tenantModel = sequelize.define('tenant', {
       ]
   });
 
-module.exports = tenantModel;
+module.exports = landlordModel;
