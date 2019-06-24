@@ -1,13 +1,13 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../startup/db');
 
-const userModel = sequelize.define('User', {
+const userModel = sequelize.define('user', {
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    user_email: {
+    email: {
       type:Sequelize.STRING(50),
       allowNull: false
     },
@@ -23,8 +23,8 @@ const userModel = sequelize.define('User', {
   {
       indexes:[
           {
-              unique: false,
-              fields:['id', 'user_email']
+              unique: true,
+              fields:['id', 'email']
           }
       ]
   });
