@@ -16,6 +16,10 @@ const tenantModel = sequelize.define('tenant', {
         },
         allowNull: true
     },
+    name: {
+        type:Sequelize.STRING(50),
+        allowNull: false
+    },
     email: {
       type:Sequelize.STRING(50),
       allowNull: false
