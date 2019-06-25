@@ -12,7 +12,7 @@ const tenantModel = sequelize.define('tenant', {
         type: Sequelize.INTEGER,
         references: {
             model: userModel,
-            key: id
+            key: userModel.id
         },
         allowNull: true
     },
