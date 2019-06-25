@@ -12,7 +12,7 @@ const propertyModel = sequelize.define('property', {
         type: Sequelize.INTEGER,
         references: {
             model: landlordModel,
-            key: 'id'
+            key: landlordModel.id
         },
         allowNull: false
     },

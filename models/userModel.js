@@ -14,6 +14,10 @@ const userModel = sequelize.define('user', {
     },
     role: {
       type:Sequelize.INTEGER,
+      references: {
+        model: roleModel,
+        key: roleModel.role_nos
+      },
       allowNull: false
     },
     password: {

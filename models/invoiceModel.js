@@ -14,7 +14,7 @@ const invoiceModel = sequelize.define('invoice', {
         type: Sequelize.INTEGER,
         references: {
             model: tenantModel,
-            key: 'id'
+            key: tenantModel.id
         },
         allowNull: false
     },
@@ -22,7 +22,7 @@ const invoiceModel = sequelize.define('invoice', {
         type: Sequelize.INTEGER,
         references: {
             model: landlordModel,
-            key: 'id'
+            key: landlordModel.id
         },
         allowNull: false
     },
@@ -30,7 +30,7 @@ const invoiceModel = sequelize.define('invoice', {
         type: Sequelize.INTEGER,
         references: {
             model: propertyModel,
-            key: 'id'
+            key: propertyModel.id
         },
         allowNull: false
     },
