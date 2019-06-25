@@ -4,6 +4,7 @@ const app = express();
 
 // CALL TO DB CONNECTION FOLDER
 const sequelize = require('./startup/db');
+// const inv = require('./models/invoiceModel')
 
 // CALL TO ROUTES FOLDER
 require('./startup/routes')(app);
