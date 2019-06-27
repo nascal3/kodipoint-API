@@ -20,7 +20,7 @@ const serviceModel = sequelize.define('service', {
       indexes:[
           {
               unique: true,
-              fields:['id']
+              fields:['service_name']
           }
       ]
   });

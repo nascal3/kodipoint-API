@@ -40,9 +40,13 @@ const propertyModel = sequelize.define('property', {
       type:Sequelize.INTEGER,
       allowNull: false
     },
-   description: {
+    description: {
       type:Sequelize.TEXT,
       allowNull: true
+    },
+    property_services: {
+        type:Sequelize.TEXT,
+        allowNull: true
     },
     property_img: {
         type:Sequelize.STRING,

@@ -40,6 +40,10 @@ const tenantModel = sequelize.define('tenant', {
         type: Sequelize.STRING,
         allowNull: false
     },
+    unit_rent: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
     landlord_id: {
       type:Sequelize.INTEGER,
       allowNull: false
@@ -47,6 +51,10 @@ const tenantModel = sequelize.define('tenant', {
     move_in_date: {
       type:Sequelize.DATE,
       allowNull: false
+    },
+    move_out_date: {
+        type:Sequelize.DATE,
+        allowNull: true
     },
     phone: {
         type:Sequelize.STRING,
@@ -60,8 +68,7 @@ const tenantModel = sequelize.define('tenant', {
   {
       indexes:[
           {
-              unique: true,
-              fields:['id', 'email', "user_id"]
+             fields:['id', 'email', "user_id","national_id"]
           }
       ]
   });

@@ -25,7 +25,15 @@ const invBreakModel = sequelize.define('invoice_breakdown', {
         },
         allowNull: false
     },
-    amount_owed: {
+    service_name: {
+        type: Sequelize.STRING,
+        references: {
+            model: serviceModel,
+            key: 'service_name'
+        },
+        allowNull: false
+    },
+    service_cost: {
         type: Sequelize.INTEGER,
         allowNull: false
     }
@@ -34,7 +42,7 @@ const invBreakModel = sequelize.define('invoice_breakdown', {
       indexes:[
           {
               unique: true,
-              fields:['id']
+              fields:['service_id','service_name']
           }
       ]
   });

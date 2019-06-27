@@ -64,8 +64,7 @@ const landlordModel = sequelize.define('landlord', {
   {
       indexes:[
           {
-              unique: true,
-              fields:['id', 'email', "user_id"]
+             fields:['national_id', 'email', "user_id"]
           }
       ]
   });
