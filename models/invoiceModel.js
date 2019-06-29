@@ -34,6 +34,10 @@ const invoiceModel = sequelize.define('invoice', {
         },
         allowNull: false
     },
+    property_name: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     date_issued: {
       type:Sequelize.DATE,
       defaultValue: Sequelize.NOW,

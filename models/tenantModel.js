@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../startup/db');
 const userModel = require('./userModel');
+const propertyModel = require('./propertyModel');
 
 const tenantModel = sequelize.define('tenant', {
     id: {
@@ -30,6 +31,10 @@ const tenantModel = sequelize.define('tenant', {
     },
     property_id: {
         type: Sequelize.INTEGER,
+        references: {
+            model: propertyModel,
+            key: propertyModel.id
+        },
         allowNull: false
     },
     property_name: {
