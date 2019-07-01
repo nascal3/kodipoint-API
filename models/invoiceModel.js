@@ -1,14 +1,14 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../startup/db');
+const connection = require('../startup/db');
 const tenantModel = require('./tenantModel');
 const landlordModel = require('./landlordModel');
 const propertyModel = require('./propertyModel');
 
-const invoiceModel = sequelize.define('invoice', {
+const invoiceModel = connection.define('invoice', {
     id: {
-      type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
     },
     tenant_id: {
         type: Sequelize.INTEGER,
@@ -39,9 +39,9 @@ const invoiceModel = sequelize.define('invoice', {
         allowNull: false
     },
     date_issued: {
-      type:Sequelize.DATE,
-      defaultValue: Sequelize.NOW,
-      allowNull: false
+        type:Sequelize.DATE,
+        defaultValue: Sequelize.NOW,
+        allowNull: false
     },
     date_paid: {
         type: Sequelize.DATE,
@@ -65,14 +65,13 @@ const invoiceModel = sequelize.define('invoice', {
         type:Sequelize.STRING(10),
         allowNull: true
     }
-  },
-  {
-      indexes:[
-          {
-              unique: true,
-              fields:['id']
-          }
-      ]
-  });
+},{
+    indexes:[
+        {
+            unique: true,
+            fields:['id']
+        }
+    ]
+});
 
 module.exports = invoiceModel;

@@ -1,12 +1,12 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../startup/db');
+const connection= require('../startup/db');
 const userModel = require('./userModel');
 
-const landlordModel = sequelize.define('landlord', {
+const landlordModel = connection.define('landlord', {
     id: {
-      type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
     },
     user_id: {
         type: Sequelize.INTEGER,
@@ -21,8 +21,8 @@ const landlordModel = sequelize.define('landlord', {
         allowNull: false
     },
     email: {
-      type:Sequelize.STRING(50),
-      allowNull: false
+        type:Sequelize.STRING(50),
+        allowNull: false
     },
     national_id: {
         type: Sequelize.STRING,
@@ -41,12 +41,12 @@ const landlordModel = sequelize.define('landlord', {
         allowNull: false
     },
     bank_branch: {
-      type:Sequelize.STRING,
-      allowNull: false
+        type:Sequelize.STRING,
+        allowNull: false
     },
     bank_acc: {
-      type:Sequelize.STRING,
-      allowNull: false
+        type:Sequelize.STRING,
+        allowNull: false
     },
     bank_swift: {
         type:Sequelize.STRING,
@@ -60,13 +60,12 @@ const landlordModel = sequelize.define('landlord', {
         type:Sequelize.STRING,
         allowNull: true
     }
-  },
-  {
-      indexes:[
-          {
-             fields:['national_id', 'email', "user_id"]
-          }
-      ]
-  });
+}, {
+    indexes:[
+        {
+            fields:['national_id', 'email', "user_id"]
+        }
+    ]
+})
 
 module.exports = landlordModel;

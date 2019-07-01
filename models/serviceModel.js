@@ -1,11 +1,11 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../startup/db');
+const connection= require('../startup/db');
 
-const serviceModel = sequelize.define('service', {
+const serviceModel = connection.define('service', {
     id: {
-      type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
     },
     service_name: {
         type: Sequelize.STRING,
@@ -15,14 +15,13 @@ const serviceModel = sequelize.define('service', {
         type: Sequelize.TEXT,
         allowNull: true
     }
-  },
-  {
-      indexes:[
-          {
-              unique: true,
-              fields:['service_name']
-          }
-      ]
-  });
+},{
+    indexes:[
+        {
+            unique: true,
+            fields:['service_name']
+        }
+    ]
+});
 
 module.exports = serviceModel;

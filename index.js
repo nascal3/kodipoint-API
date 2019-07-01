@@ -4,8 +4,8 @@ const app= express();
 
 // CALL TO DB CONNECTION FOLDER
 const sequelize = require('./startup/db');
-const inv = require('./models/invBreakModel');
-inv.sync();
+const initModels = require('./models/invbreakModel');
+
 // CALL TO ROUTES FOLDER
 require('./startup/routes')(app);
 
@@ -13,6 +13,7 @@ require('./startup/routes')(app);
 let server = null;
 
 sequelize.sync().then(result => {
+    initModels.sync();
     const port = process.env.PORT || 80 ;
     server = app.listen( port, console.log(`listening to port ${port}`));
 

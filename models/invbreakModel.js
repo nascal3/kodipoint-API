@@ -1,13 +1,13 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../startup/db');
+const connection = require('../startup/db');
 const invoiceModel = require('./invoiceModel');
 const serviceModel = require('./serviceModel');
 
-const invBreakModel = sequelize.define('invoice_breakdown', {
+const invbreakModel = connection.define('invoice_breakdown', {
     id: {
-      type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
     },
     invoice_id: {
         type: Sequelize.INTEGER,
@@ -37,14 +37,13 @@ const invBreakModel = sequelize.define('invoice_breakdown', {
         type: Sequelize.INTEGER,
         allowNull: false
     }
-  },
-  {
-      indexes:[
-          {
-              unique: true,
-              fields:['service_id','service_name']
-          }
-      ]
-  });
+},{
+    indexes:[
+        {
+            unique: true,
+            fields:['service_id','service_name']
+        }
+    ]
+});
 
-module.exports = invBreakModel;
+module.exports = invbreakModel;

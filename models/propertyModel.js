@@ -1,12 +1,12 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../startup/db');
+const connection= require('../startup/db');
 const landlordModel = require('./landlordModel');
 
-const propertyModel = sequelize.define('property', {
+const propertyModel = connection.define('property', {
     id: {
-      type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
     },
     landlord_id: {
         type: Sequelize.INTEGER,
@@ -21,8 +21,8 @@ const propertyModel = sequelize.define('property', {
         allowNull: false
     },
     property_type: {
-      type:Sequelize.STRING(50),
-      allowNull: false
+        type:Sequelize.STRING(50),
+        allowNull: false
     },
     contact_person: {
         type: Sequelize.STRING,
@@ -37,12 +37,12 @@ const propertyModel = sequelize.define('property', {
         allowNull: false
     },
     nos_units: {
-      type:Sequelize.INTEGER,
-      allowNull: false
+        type:Sequelize.INTEGER,
+        allowNull: false
     },
     description: {
-      type:Sequelize.TEXT,
-      allowNull: true
+        type:Sequelize.TEXT,
+        allowNull: true
     },
     property_services: {
         type:Sequelize.TEXT,
@@ -52,14 +52,13 @@ const propertyModel = sequelize.define('property', {
         type:Sequelize.STRING,
         allowNull: true
     }
-  },
-  {
-      indexes:[
-          {
-              unique: true,
-              fields:['id', 'lr_nos']
-          }
-      ]
-  });
+},{
+    indexes:[
+        {
+            unique: true,
+            fields:['id', 'lr_nos']
+        }
+    ]
+});
 
 module.exports = propertyModel;
