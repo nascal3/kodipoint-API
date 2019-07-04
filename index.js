@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const app= express();
 
+// ADDED CORS
 app.use(cors({
     origin: 'http://localhost:3000'
 }));
