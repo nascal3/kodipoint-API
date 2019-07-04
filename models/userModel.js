@@ -14,10 +14,6 @@ const userModel = connection.define('user', {
     },
     role: {
         type:Sequelize.INTEGER,
-        references: {
-            model: roleModel,
-            key: roleModel.role_nos
-        },
         allowNull: false
     },
     password: {
@@ -28,7 +24,7 @@ const userModel = connection.define('user', {
     indexes:[
         {
             unique: true,
-            fields:['email']
+            fields:['id','email']
         }
     ]
 });
