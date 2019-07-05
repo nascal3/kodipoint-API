@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const generateToken = require('../middleware/usersTokenGen');
+const auth = require('../middleware/auth');
 const Users = require('../models/userModel');
 require('express-async-errors');
 
 // GET ALL USERS LIST .
-router.get('/:page', async (req, res) => {
+router.get('/:page', auth, async (req, res) => {
     let limit = 50;   // number of records per page
     let offset;
     let pageNumber = req.params.page;
@@ -99,11 +100,9 @@ router.post('/register', async (req, res) => {
 });
 
 // USERS CHANGE THEIR PASSWORD
-router.post('/change/password', async (req, res) => {
+router.post('/change/password', auth, async (req, res) => {
 
-    console.log(req);
     // === get user ID from token in header ===
-    // if (!req.user) return res.status(500).json({'Error': 'No valid user token found'});
     let userID = req.user.id;
 
     let newPassword = req.body.newPassword;
@@ -116,6 +115,7 @@ router.post('/change/password', async (req, res) => {
         }
     });
 
+
     // check user password validity
     const validPassword = await bcrypt.compare(oldPassword, userData.password);
     if (!validPassword) return res.status(400).json({'Error': 'Wrong current Password'});
@@ -126,7 +126,7 @@ router.post('/change/password', async (req, res) => {
 
     const userChange = await Users.update(
         {
-            Password: salted_password
+            password: salted_password
         },
         {
             where: {
@@ -135,7 +135,42 @@ router.post('/change/password', async (req, res) => {
         }
     );
 
-    res.status(200).json({'result': userChange});
+    res.status(200).json({'result': userChange[0]});
+
+});
+
+// RESET USERS PASSWORD
+router.post('/reset/password', auth, async (req, res) => {
+
+    let username = req.body.username;
+    let newPassword = Math.random().toString(36).substring(9);
+
+    const userData = await Users.findOne({
+        attributes: {exclude: ['timestamp']},
+        where: {
+            email: username
+        }
+    });
+
+    // check if user exists
+    if (!userData) return res.status(400).json({'Error': 'The following  user does not exist!'});
+
+    // SALT THE NEW PASSWORD AND INSERT NEW USER INTO DB
+    const salt = await bcrypt.genSalt(10);
+    const salted_password = await bcrypt.hash(newPassword, salt);
+
+    const userChange = await Users.update(
+        {
+            password: salted_password
+        },
+        {
+            where: {
+                email: username
+            }
+        }
+    );
+
+    res.status(200).json({'result': newPassword, 'success_code': userChange[0]});
 
 });
 
