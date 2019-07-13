@@ -11,10 +11,6 @@ const roleModel = connection.define('role', {
         type:Sequelize.STRING(50),
         unique: true,
         allowNull: false
-    },
-    role_nos: {
-        type:Sequelize.INTEGER,
-        allowNull: false
     }
 });
 

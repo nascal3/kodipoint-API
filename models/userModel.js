@@ -13,7 +13,7 @@ const userModel = connection.define('user', {
         allowNull: false
     },
     role: {
-        type:Sequelize.INTEGER,
+        type:Sequelize.STRING,
         allowNull: false
     },
     password: {

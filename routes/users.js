@@ -1,13 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+
+const Users = require('../models/userModel');
+
 const generateToken = require('../middleware/usersTokenGen');
 const auth = require('../middleware/auth');
-const Users = require('../models/userModel');
+const superUser = require('../middleware/suAuth');
+const admmin = require('../middleware/adminAuth');
+
 require('express-async-errors');
 
 // GET ALL USERS LIST .
-router.get('/:page', auth, async (req, res) => {
+router.get('/:page', [auth, superUser, admmin], async (req, res) => {
     let limit = 50;   // number of records per page
     let offset;
     let pageNumber = req.params.page;
