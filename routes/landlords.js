@@ -3,15 +3,12 @@ const router = express.Router();
 
 const Landlords = require('../models/landlordModel');
 const auth = require('../middleware/auth');
-const superUser = require('../middleware/suAuth');
-const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
-const landlordTenant = require('../middleware/landTenAuth');
 
 require('express-async-errors');
 
 // REGISTER LANDLORDS PERSONAL DETAILS
-router.post('/register', [auth, superUser, admin, landlord, landlordTenant], async (req, res) => {
+router.post('/register', [auth, landlord], async (req, res) => {
 
     let userID = req.user.id;
     let name = req.body.name;
