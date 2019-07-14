@@ -10,12 +10,11 @@ require('express-async-errors');
 
 // Function get single tenants records
 const getTenant = async (user_id) => {
-    const res = await Tenants.findAll({
+    return await Tenants.findAll({
         where: {
             user_id: user_id
         }
     });
-    return res.dataValues;
 }
 
 // GET ALL TENANTS LIST .
