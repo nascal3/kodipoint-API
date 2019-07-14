@@ -6,13 +6,12 @@ const Users = require('../models/userModel');
 
 const generateToken = require('../middleware/usersTokenGen');
 const auth = require('../middleware/auth');
-const superUser = require('../middleware/suAuth');
 const admin = require('../middleware/adminAuth');
 
 require('express-async-errors');
 
 // GET ALL USERS LIST .
-router.get('/:page', [auth, superUser, admin], async (req, res) => {
+router.get('/:page', [auth, admin], async (req, res) => {
     let limit = 50;   // number of records per page
     let offset;
     let pageNumber = req.params.page;
@@ -24,7 +23,6 @@ router.get('/:page', [auth, superUser, admin], async (req, res) => {
     offset = limit * (page - 1);
 
     const users = await Users.findAll({
-        attributes: {exclude: ['Password']},
         limit: limit,
         offset: offset
     });
@@ -41,7 +39,6 @@ router.post('/login', async (req, res) => {
     let password = req.body.password;
 
     const userData = await Users.findOne({
-        attributes: {exclude: ['timestamp']},
         where: {
            email: username
         }
@@ -75,7 +72,6 @@ router.post('/register', async (req, res) => {
     let role = req.body.role;
 
     const userEmail = await Users.findOne({
-        attributes: {exclude: ['timestamp']},
         where: {
             email: username
         }
@@ -114,7 +110,6 @@ router.post('/change/password', auth, async (req, res) => {
     let oldPassword = req.body.oldPassword;
 
     const userData = await Users.findOne({
-        attributes: {exclude: ['timestamp']},
         where: {
             id: userID
         }
@@ -140,7 +135,7 @@ router.post('/change/password', auth, async (req, res) => {
         }
     );
 
-    res.status(200).json({'result': userChange[0]});
+    res.status(200).json({'success_code': userChange[0]});
 
 });
 
@@ -151,7 +146,6 @@ router.post('/reset/password', auth, async (req, res) => {
     let newPassword = Math.random().toString(36).substring(9);
 
     const userData = await Users.findOne({
-        attributes: {exclude: ['timestamp']},
         where: {
             email: username
         }
