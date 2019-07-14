@@ -10,7 +10,8 @@ app.use(cors({
 
 // CALL TO DB CONNECTION FOLDER
 const sequelize = require('./startup/db');
-const initModels = require('./models/invbreakModel');
+const initModel1 = require('./models/invbreakModel');
+const initModel2 = require('./models/tenantRecModel');
 
 // CALL TO ROUTES FOLDER
 require('./startup/routes')(app);
@@ -19,7 +20,9 @@ require('./startup/routes')(app);
 let server = null;
 
 sequelize.sync().then(result => {
-    initModels.sync();
+    initModel1.sync();
+    initModel2.sync();
+
     const port = process.env.PORT || 80 ;
     server = app.listen( port, console.log(`listening to port ${port}`));
 
