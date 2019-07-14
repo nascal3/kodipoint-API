@@ -12,7 +12,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
 
     let userID = req.user.id;
     let name = req.body.name;
-    let email = req.body.email;
+    let email = req.user.email;
     let nationalID = req.body.national_id;
     let kraPIN = req.body.kra_pin;
     let phone = req.body.phone;

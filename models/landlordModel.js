@@ -63,6 +63,7 @@ const landlordModel = connection.define('landlord', {
 }, {
     indexes:[
         {
+            unique: true,
             fields:['national_id', 'email', "user_id"]
         }
     ]
