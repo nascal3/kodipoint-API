@@ -33,6 +33,16 @@ router.get('/:page', [auth, admin], async (req, res) => {
     res.status(200).json({'result': users, 'currentPage': pageNumber, 'pages': pages});
 });
 
+// GET ONE USER BY ID.
+router.post('/single', [auth, admin], async (req, res) => {
+    const user = await Users.findOne({
+        where: {
+            id: req.body.id
+        }
+    });
+    res.status(200).json({ 'results': user});
+})
+
 // LOGIN USERS PROCESS
 router.post('/login', async (req, res) => {
     let username = req.body.username;

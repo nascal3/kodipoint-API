@@ -18,6 +18,12 @@ const getLandlord = async (user_id) => {
     return res.dataValues;
 }
 
+// GET ONE LANDLORD BY ID.
+router.get('/single', [auth, landlord], async (req, res) => {
+    const userData = await getLandlord(req.body.user_id);
+    res.status(200).json({ 'results': userData});
+})
+
 // GET ALL LANDLORDS LIST .
 router.get('/:page', [auth, admin], async (req, res) => {
     let limit = 50;   // number of records per page

@@ -17,6 +17,12 @@ const getTenant = async (user_id) => {
     });
 }
 
+// GET ONE TENANT BY ID.
+router.get('/single', [auth, tenant], async (req, res) => {
+    const userData = await getTenant(req.body.user_id);
+    res.status(200).json({ 'results': userData});
+})
+
 // GET ALL TENANTS LIST .
 router.get('/:page', [auth, admin], async (req, res) => {
     let limit = 50;   // number of records per page
