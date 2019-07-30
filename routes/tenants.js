@@ -15,11 +15,11 @@ const getTenant = async (user_id) => {
             user_id: user_id
         }
     });
-}
+};
 
 // GET ONE TENANT BY ID.
 router.get('/single', [auth, tenant], async (req, res) => {
-    const userData = await getTenant(req.body.user_id);
+    const userData = await getTenant(req.body.id);
     res.status(200).json({ 'results': userData});
 })
 
@@ -68,7 +68,7 @@ router.post('/register', [auth, tenant], async (req, res) => {
 // EDIT TENANTS PERSONAL DETAILS
 router.post('/profile/edit', [auth, tenant], async (req, res) => {
 
-    let userID = req.user.id;
+    let userID = req.body.id || req.user.id;
 
     const userData = await Tenants.findOne({
         where: {
@@ -76,6 +76,7 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
         }
     });
 
+    if (!userData) return res.status(500).json({'Error': 'User not found'});
 
     let name = userData.name;
     let email = userData.email;

@@ -14,11 +14,11 @@ const getProperty = async (prop_id) => {
             id: prop_id
         }
     });
-}
+};
 
 // GET ONE PROPERTY BY ID.
 router.get('/single', [auth, admin], async (req, res) => {
-    const propData = await getProperty(req.body.prop_id);
+    const propData = await getProperty(req.body.id);
     res.status(200).json({ 'results': propData});
 })
 
@@ -73,14 +73,15 @@ router.post('/register', [auth, admin], async (req, res) => {
 });
 
 // EDIT PROPERTY DETAILS
-router.post('/profile/edit', [auth, admin], async (req, res) => {
+router.post('/edit', [auth, admin], async (req, res) => {
 
     const propData = await Properties.findOne({
         where: {
-            id: req.body.prop_id
+            id: req.body.id
         }
     });
 
+    if (!propData) return res.status(500).json({'Error': 'Property not found'});
 
     let landlord_id = propData.landlord_id;
     let property_name = propData.property_name;
@@ -107,12 +108,12 @@ router.post('/profile/edit', [auth, admin], async (req, res) => {
     },
         {
             where: {
-                id: req.body.prop_id
+                id: req.body.id
             }
         }
     );
 
-   const changedData = await getProperty(req.body.prop_id);
+   const changedData = await getProperty(req.body.id);
 
     res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });

@@ -10,19 +10,18 @@ require('express-async-errors');
 
 // Function get single landlord data
 const getLandlord = async (user_id) => {
-    const res = await Landlords.findOne({
+    return await Landlords.findOne({
         where: {
             user_id: user_id
         }
     });
-    return res.dataValues;
-}
+};
 
 // GET ONE LANDLORD BY ID.
 router.get('/single', [auth, landlord], async (req, res) => {
-    const userData = await getLandlord(req.body.user_id);
+    const userData = await getLandlord(req.body.id);
     res.status(200).json({ 'results': userData});
-})
+});
 
 // GET ALL LANDLORDS LIST .
 router.get('/:page', [auth, admin], async (req, res) => {
@@ -81,7 +80,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
 // EDIT LANDLORDS PERSONAL DETAILS
 router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
-    let userID = req.user.id;
+    let userID = req.body.id || req.user.id;
 
     const userData = await Landlords.findOne({
         where: {
@@ -89,6 +88,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
         }
     });
 
+    if (!userData) return res.status(500).json({'Error': 'User not found'});
 
     let name = userData.name;
     let email = userData.email;

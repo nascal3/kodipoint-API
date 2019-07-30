@@ -34,7 +34,7 @@ router.get('/:page', [auth, admin], async (req, res) => {
 });
 
 // GET ONE USER BY ID.
-router.post('/single', [auth, admin], async (req, res) => {
+router.get('/', [auth, admin], async (req, res) => {
     const user = await Users.findOne({
         where: {
             id: req.body.id
