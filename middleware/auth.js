@@ -5,7 +5,7 @@ const  auth = (req, res, next) => {
   if (!token) return res.status(401).json({'Error':'Access denied, user not logged in or no token provided!'});
 
   try {
-    req.user = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+    req.user = jwt.verify(token, process.env.JWT);
     next();
   } catch (e) {
     res.status(400).send('Invalid token');

@@ -46,7 +46,7 @@ router.get('/:page', [auth, admin], async (req, res) => {
 // REGISTER LANDLORDS PERSONAL DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
-    let userID = req.user.id;
+    let userID = req.body.user_id || req.user.id;
     let name = req.body.name;
     let email = req.user.email;
     let nationalID = req.body.national_id;

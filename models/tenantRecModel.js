@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const connection= require('../startup/db');
-const userModel = require('./userModel');
+const tenantModel = require('./tenantModel');
+const landlordModel = require('./landlordModel');
 const propertyModel = require('./propertyModel');
 
 const tenantRecModel = connection.define('tenant_record', {
@@ -9,13 +10,13 @@ const tenantRecModel = connection.define('tenant_record', {
         primaryKey: true,
         autoIncrement: true,
     },
-    user_id: {
+    tenant_id: {
         type: Sequelize.INTEGER,
         references: {
-            model: userModel,
-            key: userModel.id
+            model: tenantModel,
+            key: tenantModel.id
         },
-        allowNull: true
+        allowNull: false
     },
     property_id: {
         type: Sequelize.INTEGER,
@@ -39,6 +40,10 @@ const tenantRecModel = connection.define('tenant_record', {
     },
     landlord_id: {
         type:Sequelize.INTEGER,
+        references: {
+            model: landlordModel,
+            key: landlordModel.id
+        },
         allowNull: false
     },
     move_in_date: {
@@ -52,11 +57,19 @@ const tenantRecModel = connection.define('tenant_record', {
     phone: {
         type:Sequelize.STRING,
         allowNull: true
+    },
+    created_by: {
+        type:Sequelize.INTEGER,
+        allowNull: false
+    },
+    edited_by: {
+        type:Sequelize.INTEGER,
+        allowNull: true
     }
 },{
     indexes:[
         {
-            fields:["user_id", "property_id", "landlord_id", "property_name"]
+            fields:["tenant_id", "property_id", "landlord_id", "property_name"]
         }
     ]
 });

@@ -46,14 +46,14 @@ router.get('/:page', [auth, admin], async (req, res) => {
 // REGISTER TENANTS PERSONAL DETAILS
 router.post('/register', [auth, tenant], async (req, res) => {
 
-    let userID = req.user.id;
+    let userID = req.body.user_id || req.user.id;
     let name = req.body.name;
     let email = req.user.email;
     let nationalID = req.body.national_id;
     let phone = req.body.phone;
     let avatar = req.body.avatar;
 
-    const userData = await Tenants .create({
+    const userData = await Tenants.create({
         user_id: userID,
         name: name,
         email: email,
