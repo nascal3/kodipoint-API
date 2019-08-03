@@ -56,7 +56,7 @@ const tenantRecModel = connection.define('tenant_record', {
 },{
     indexes:[
         {
-            fields:["user_id", "property_id",  "property_name"]
+            fields:["user_id", "property_id", "landlord_id", "property_name"]
         }
     ]
 });

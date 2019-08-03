@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize');
 const connection= require('../startup/db');
-const roleModel = require('./roleModel');
 
 const userModel = connection.define('user', {
     id: {
