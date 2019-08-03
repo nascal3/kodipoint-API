@@ -5,7 +5,7 @@ const app= express();
 
 // ADDED CORS
 app.use(cors({
-    origin: 'http://localhost:3000'
+    origin: 'http://localhost:8080'
 }));
 
 // CALL TO DB CONNECTION FOLDER
