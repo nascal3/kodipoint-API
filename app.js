@@ -23,7 +23,7 @@ sequelize.sync().then(result => {
     initModel1.sync();
     initModel2.sync();
 
-    const port = process.env.PORT || 80 ;
+    const port = process.env.PORT || 3000 ;
     server = app.listen( port, console.log(`listening to port ${port}`));
 
     console.log('DB_HOST -->', process.env.DB_HOST);
