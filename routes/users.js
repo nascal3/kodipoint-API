@@ -64,6 +64,7 @@ router.post('/login', async (req, res) => {
     const token = generateToken(
         userData.id,
         userData.email,
+        userData.name,
         userData.role,
     );
 
@@ -79,6 +80,7 @@ router.post('/login', async (req, res) => {
 router.post('/register', async (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
+    let name = req.body.name;
     let role = req.body.role;
 
     const userEmail = await Users.findOne({
@@ -96,6 +98,7 @@ router.post('/register', async (req, res) => {
     const userData = await Users.create({
         email: username,
         password: salted_password,
+        name: name,
         role: role
     });
 

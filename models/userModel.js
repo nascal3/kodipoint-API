@@ -11,6 +11,10 @@ const userModel = connection.define('user', {
         type:Sequelize.STRING(50),
         allowNull: false
     },
+    name: {
+        type:Sequelize.STRING(50),
+        allowNull: false
+    },
     role: {
         type:Sequelize.STRING,
         allowNull: false
