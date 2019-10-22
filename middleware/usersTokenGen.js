@@ -7,7 +7,7 @@ const generateAuthToken = (id, email, name, role) => {
       name: email,
       role: role
    },
-      process.env.JWT );
+      process.env.JWT_SECRET );
 };
 
 module.exports = generateAuthToken;
