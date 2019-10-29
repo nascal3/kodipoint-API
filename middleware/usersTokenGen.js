@@ -4,9 +4,9 @@ const generateAuthToken = (id, email, name, role) => {
    return jwt.sign({
       id: id,
       email: email,
-      name: email,
+      name: name,
       role: role
-   },process.env.JWT_SECRET);
+   }, process.env.JWT_SECRET);
 };
 
 module.exports = generateAuthToken;
