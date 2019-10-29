@@ -6,7 +6,8 @@ const generateAuthToken = (id, email, name, role) => {
       email: email,
       name: name,
       role: role
-   }, process.env.JWT_SECRET);
+   }, process.env.JWT_SECRET,
+   { expiresIn: '24h' });
 };
 
 module.exports = generateAuthToken;

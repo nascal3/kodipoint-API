@@ -19,13 +19,14 @@ require('./startup/routes')(app);
 // CREATE TABLES IF THEY DON'T EXIST
 let server = null;
 
-sequelize.sync().then(result => {
+sequelize.sync().then(() => {
     initModel1.sync();
     initModel2.sync();
 
     const port = process.env.PORT || 3000 ;
     server = app.listen( port, console.log(`listening to port ${port}`));
 
+    if (!process.env.JWT_SECRET) throw new Error("JWT key missing in environment");
     console.log('DB_HOST -->', process.env.DB_HOST);
     console.log('DB_USER -->', process.env.DB_USER);
     console.log('DB_PASSWORD -->', process.env.DB_PASSWORD);
