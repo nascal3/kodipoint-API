@@ -12,7 +12,7 @@ require('express-async-errors');
 
 // GET ALL USERS LIST .
 router.get('/:page', [auth, admin], async (req, res) => {
-    let limit = 50;   // number of records per page
+    let limit = 100;   // number of records per page
     let offset;
     let pageNumber = req.params.page;
 
@@ -68,7 +68,7 @@ router.post('/login', async (req, res) => {
         userData.role,
     );
 
-    // remove password data from json results
+    // hide data from json results
     userData.password = undefined;
 
     // set authorisation header
@@ -105,8 +105,10 @@ router.post('/register', async (req, res) => {
     //generate User token
     const token = generateToken(userData.id, userData.email, userData.role);
 
-    // remove password data from json results
+    // hide data from json results
     userData.password = undefined;
+    userData.createdAt = undefined;
+    userData.updatedAt = undefined;
 
     // set authorisation header
     return res.header('Authorization', token).status(200).json({'user':userData, 'token': token});

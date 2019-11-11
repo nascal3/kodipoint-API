@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 
 const Properties = require('../models/propertyModel');
+const Landlords = require('../models/landlordModel');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
+const landlord = require('../middleware/landlordAuth');
 
 require('express-async-errors');
 
@@ -16,15 +18,53 @@ const getProperty = async (prop_id) => {
     });
 };
 
+// Function get/match user ID to landlord ID
+const mapLandlordID = async (user_id) => {
+    return Landlords.findOne({
+        where: {
+            user_id: user_id
+        },
+        attributes: ['id']
+    })
+};
+
 // GET ONE PROPERTY BY ID.
 router.get('/single', [auth, admin], async (req, res) => {
     const propData = await getProperty(req.body.id);
     res.status(200).json({ 'results': propData});
 })
 
+// GET ALL PROPERTIES FOR SPECIFIC LANDLORD LIST .
+router.get('/landlord/:page', [auth, landlord], async (req, res) => {
+    let limit = 100;   // number of records per page
+    let offset;
+    let pageNumber = req.params.page;
+
+    const landlordData = await mapLandlordID(req.user.id); // get user ID from token in header
+    const landlordID = landlordData.dataValues.id
+
+    // let landlordID = req.params.landlord_id;
+
+    const data = await Properties.findAndCountAll();
+    let page = req.params.page ? parseInt(req.params.page) : 1;  // page number
+    page <= 0 ? page = 1 : page = parseInt(req.params.page);
+    let pages = Math.ceil(data.count / limit);
+    offset = limit * (page - 1);
+
+    const results = await Properties.findOne({
+        where: {
+            landlord_id: landlordID
+        },
+        limit: limit,
+        offset: offset
+    });
+
+    res.status(200).json({'result': results, 'currentPage': pageNumber, 'pages': pages});
+});
+
 // GET ALL PROPERTIES LIST .
 router.get('/:page', [auth, admin], async (req, res) => {
-    let limit = 50;   // number of records per page
+    let limit = 100;   // number of records per page
     let offset;
     let pageNumber = req.params.page;
 
@@ -43,7 +83,7 @@ router.get('/:page', [auth, admin], async (req, res) => {
 });
 
 // REGISTER PROPERTY DETAILS
-router.post('/register', [auth, admin], async (req, res) => {
+router.post('/register', [auth, landlord], async (req, res) => {
 
     let landlord_id = req.body.landlord_id;
     let property_name = req.body.property_name;
@@ -73,7 +113,7 @@ router.post('/register', [auth, admin], async (req, res) => {
 });
 
 // EDIT PROPERTY DETAILS
-router.post('/edit', [auth, admin], async (req, res) => {
+router.post('/edit', [auth, landlord], async (req, res) => {
 
     const propData = await Properties.findOne({
         where: {
