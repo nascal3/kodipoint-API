@@ -43,15 +43,13 @@ router.get('/landlord/:page', [auth, landlord], async (req, res) => {
     const landlordData = await mapLandlordID(req.user.id); // get user ID from token in header
     const landlordID = landlordData.dataValues.id
 
-    // let landlordID = req.params.landlord_id;
-
     const data = await Properties.findAndCountAll();
     let page = req.params.page ? parseInt(req.params.page) : 1;  // page number
     page <= 0 ? page = 1 : page = parseInt(req.params.page);
     let pages = Math.ceil(data.count / limit);
     offset = limit * (page - 1);
 
-    const results = await Properties.findOne({
+    const results = await Properties.findAll({
         where: {
             landlord_id: landlordID
         },
