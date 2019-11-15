@@ -20,12 +20,12 @@ const getProperty = async (prop_id) => {
 
 // Function get/match user ID to landlord ID
 const mapLandlordID = async (user_id) => {
-    return Landlords.findOne({
+    const results = await Landlords.findOne({
         where: {
             user_id: user_id
-        },
-        attributes: ['id']
+        }
     })
+    return results.dataValues.id
 };
 
 // GET ONE PROPERTY BY ID.
@@ -36,12 +36,11 @@ router.get('/single', [auth, admin], async (req, res) => {
 
 // GET ALL PROPERTIES FOR SPECIFIC LANDLORD LIST .
 router.get('/landlord/:page', [auth, landlord], async (req, res) => {
-    let limit = 100;   // number of records per page
+    const limit = 100;   // number of records per page
     let offset;
-    let pageNumber = req.params.page;
+    const pageNumber = req.params.page;
 
-    const landlordData = await mapLandlordID(req.user.id); // get user ID from token in header
-    const landlordID = landlordData.dataValues.id
+    const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
 
     const data = await Properties.findAndCountAll();
     let page = req.params.page ? parseInt(req.params.page) : 1;  // page number
@@ -62,14 +61,14 @@ router.get('/landlord/:page', [auth, landlord], async (req, res) => {
 
 // GET ALL PROPERTIES LIST .
 router.get('/:page', [auth, admin], async (req, res) => {
-    let limit = 100;   // number of records per page
+    const limit = 100;   // number of records per page
     let offset;
-    let pageNumber = req.params.page;
+    const pageNumber = req.params.page;
 
     const data = await Properties.findAndCountAll();
     let page = req.params.page ? parseInt(req.params.page) : 1;      // page number
     page <= 0 ? page = 1 : page = parseInt(req.params.page);
-    let pages = Math.ceil(data.count / limit);
+    const pages = Math.ceil(data.count / limit);
     offset = limit * (page - 1);
 
     const users = await Properties.findAll({
@@ -83,16 +82,16 @@ router.get('/:page', [auth, admin], async (req, res) => {
 // REGISTER PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
-    let landlord_id = req.body.landlord_id;
-    let property_name = req.body.property_name;
-    let property_type = req.body.property_type;
-    let contact_person = req.body.contact_person;
-    let phone = req.body.phone;
-    let lr_nos = req.body.lr_nos;
-    let nos_units = req.body.nos_units;
-    let description = req.body.description;
-    let property_services = req.body.property_services;
-    let property_img = req.body.property_img;
+    const landlord_id = await mapLandlordID(req.body.user_id);
+    const property_name = req.body.property_name;
+    const property_type = req.body.property_type;
+    const contact_person = req.body.contact_person;
+    const phone = req.body.phone;
+    const lr_nos = req.body.lr_nos;
+    const nos_units = req.body.nos_units;
+    const description = req.body.description;
+    const property_services = req.body.property_services;
+    const property_img = req.body.property_img;
 
     const propData = await Properties .create({
         landlord_id: landlord_id,
@@ -121,16 +120,16 @@ router.post('/edit', [auth, landlord], async (req, res) => {
 
     if (!propData) return res.status(500).json({'Error': 'Property not found'});
 
-    let landlord_id = propData.landlord_id;
-    let property_name = propData.property_name;
-    let property_type = propData.property_type;
-    let contact_person = propData.contact_person;
-    let phone = propData.phone;
-    let lr_nos = propData.lr_nos;
-    let nos_units = propData.nos_units;
-    let description = propData.description;
-    let property_services = propData.property_services;
-    let property_img = propData.property_img;
+    const landlord_id = propData.landlord_id;
+    const property_name = propData.property_name;
+    const property_type = propData.property_type;
+    const contact_person = propData.contact_person;
+    const phone = propData.phone;
+    const lr_nos = propData.lr_nos;
+    const nos_units = propData.nos_units;
+    const description = propData.description;
+    const property_services = propData.property_services;
+    const property_img = propData.property_img;
 
     const newData = await Properties.update({
             landlord_id: req.body.landlord_id || landlord_id,
