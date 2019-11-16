@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
+const Sequelize = require('sequelize');
+
 const Properties = require('../models/propertyModel');
 const Landlords = require('../models/landlordModel');
 const auth = require('../middleware/auth');
@@ -8,6 +10,7 @@ const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
 require('express-async-errors');
+const Op = Sequelize.Op;
 
 // Function get single property records
 const getProperty = async (prop_id) => {
@@ -32,6 +35,36 @@ const mapLandlordID = async (user_id) => {
 router.get('/single', [auth, admin], async (req, res) => {
     const propData = await getProperty(req.body.id);
     res.status(200).json({ 'results': propData});
+})
+
+// SEARCH ALL PROPERTY .
+router.post('/search', [auth, landlord], async (req, res) => {
+  const property_name = req.body.property_name;
+
+  const searchResults  = await Properties.findAll({
+    where: {
+      property_name: {
+        [Op.like]: `%${property_name}%`
+      }
+    }
+  });
+  res.status(200).json({ 'results': searchResults});
+})
+
+// SEARCH PROPERTY FOR SINGLE LANDLORD BY ID.
+router.post('/landlord/search', [auth, landlord], async (req, res) => {
+  const property_name = req.body.property_name;
+  const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
+
+  const searchResults  = await Properties.findAll({
+    where: {
+      property_name: {
+        [Op.like]: `%${property_name}%`
+      },
+      landlord_id: landlordID
+    }
+  });
+  res.status(200).json({ 'results': searchResults});
 })
 
 // GET ALL PROPERTIES FOR SPECIFIC LANDLORD LIST .
