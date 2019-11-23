@@ -12,7 +12,7 @@ const landlord = require('../middleware/landlordAuth');
 require('express-async-errors');
 const Op = Sequelize.Op;
 
-// Function get single property records
+// ***Function get single property records***
 const getProperty = async (prop_id) => {
     return await Properties.findOne({
         where: {
@@ -21,7 +21,7 @@ const getProperty = async (prop_id) => {
     });
 };
 
-// Function get/match user ID to landlord ID
+// ***Function get/match user ID to landlord ID***
 const mapLandlordID = async (user_id) => {
     const results = await Landlords.findOne({
         where: {
@@ -155,48 +155,48 @@ router.post('/register', [auth, landlord], async (req, res) => {
 
 // EDIT PROPERTY DETAILS
 router.post('/edit', [auth, landlord], async (req, res) => {
+  const prop = JSON.parse(req.body.json)
 
-    const propData = await Properties.findOne({
-        where: {
-            id: req.body.id
-        }
-    });
+  const propData = await Properties.findOne({
+    where: {
+        id: prop.id
+    }
+  });
 
-    if (!propData) return res.status(500).json({'Error': 'Property not found'});
+  if (!propData) return res.status(500).json({'Error': 'Property not found'});
 
-    const landlord_id = propData.landlord_id;
-    const property_name = propData.property_name;
-    const property_type = propData.property_type;
-    const contact_person = propData.contact_person;
-    const phone = propData.phone;
-    const lr_nos = propData.lr_nos;
-    const nos_units = propData.nos_units;
-    const description = propData.description;
-    const property_services = propData.property_services;
-    const property_img = propData.property_img;
+  const landlord_id = propData.landlord_id;
+  const property_name = propData.property_name;
+  const property_type = propData.property_type;
+  const contact_person = propData.contact_person;
+  const phone = propData.phone;
+  const lr_nos = propData.lr_nos;
+  const nos_units = propData.nos_units;
+  const description = propData.description;
+  const property_services = propData.property_services;
+  const property_img = propData.property_img;
 
-    const newData = await Properties.update({
-            landlord_id: req.body.landlord_id || landlord_id,
-            property_name: req.body.property_name || property_name,
-            property_type: req.body.property_type || property_type,
-            contact_person: req.body.contact_person || contact_person,
-            phone: req.body.phone || phone,
-            lr_nos: req.body.lr_nos || lr_nos,
-            nos_units: req.body.nos_units || nos_units,
-            description: req.body.description || description,
-            property_services: req.body.property_services || property_services,
-            property_img: req.body.property_img || property_img
-    },
-        {
-            where: {
-                id: req.body.id
-            }
-        }
-    );
+  const newData = await Properties.update({
+    landlord_id: prop.landlord_id || landlord_id,
+    property_name: prop.property_name || property_name,
+    property_type: prop.property_type || property_type,
+    contact_person: prop.contact_person || contact_person,
+    phone: prop.phone || phone,
+    lr_nos: prop.lr_nos || lr_nos,
+    nos_units: prop.nos_units || nos_units,
+    description: prop.description || description,
+    property_services: prop.property_services || property_services,
+    property_img: prop.property_img || property_img
+  },
+  {
+    where: {
+      id: prop.id
+    }
+  });
 
-   const changedData = await getProperty(req.body.id);
+  const changedData = await getProperty(prop.id);
 
-    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+  res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
 module.exports = router;
