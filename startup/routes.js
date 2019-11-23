@@ -10,6 +10,7 @@ module.exports = (app) => {
   app.use(
     express.json(),
     fileUpload({
+      createParentPath: true,
       useTempFiles : true,
       tempFileDir : '/tmp/'
     })

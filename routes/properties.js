@@ -114,17 +114,18 @@ router.get('/:page', [auth, admin], async (req, res) => {
 
 // REGISTER PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
-  if (!req.files) res.status(400).send('No files were uploaded.');
-
-  // The name of the input field (i.e. "propertyImage") is used to retrieve the uploaded file
-  let propertyImage = req.files.file;
-  console.log('>>>', propertyImage)
-
-  // Use the mv() method to place the file somewhere on your server
-  propertyImage.mv(`./uploaded/${propertyImage.name}`, (err) => {
-    if (err) res.status(500).send(err);
-  });
   const prop = JSON.parse(req.body.json)
+  let uploadPath = '';
+  if (req.files) {
+    const propertyImage = req.files.file;
+    const timeStamp = +new Date()
+    uploadPath = `/uploads/images/${prop.user_id}/properties/${timeStamp}_${propertyImage.name}`;
+
+    // Use the mv() method to place the file somewhere on your server
+    propertyImage.mv(`./uploads/images/${prop.user_id}/properties/${timeStamp}_${propertyImage.name}`, (err) => {
+      if (err) res.status(500).send(err);
+    });
+  }
 
   const landlord_id = await mapLandlordID(prop.user_id);
   const property_name = prop.property_name;
@@ -135,7 +136,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
   const nos_units = prop.nos_units;
   const description = prop.description;
   const property_services = prop.property_services;
-  const property_img = propertyImage.name;
+  const property_img = uploadPath
 
   const propData = await Properties .create({
       landlord_id: landlord_id,
