@@ -114,32 +114,43 @@ router.get('/:page', [auth, admin], async (req, res) => {
 
 // REGISTER PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
+  if (!req.files) res.status(400).send('No files were uploaded.');
 
-    const landlord_id = await mapLandlordID(req.body.user_id);
-    const property_name = req.body.property_name;
-    const property_type = req.body.property_type;
-    const contact_person = req.body.contact_person;
-    const phone = req.body.phone;
-    const lr_nos = req.body.lr_nos;
-    const nos_units = req.body.nos_units;
-    const description = req.body.description;
-    const property_services = req.body.property_services;
-    const property_img = req.body.property_img;
+  // The name of the input field (i.e. "propertyImage") is used to retrieve the uploaded file
+  let propertyImage = req.files.file;
+  console.log('>>>', propertyImage)
 
-    const propData = await Properties .create({
-        landlord_id: landlord_id,
-        property_name: property_name,
-        property_type: property_type,
-        contact_person: contact_person,
-        phone: phone,
-        lr_nos: lr_nos,
-        nos_units: nos_units,
-        description: description,
-        property_services: property_services,
-        property_img: property_img
-    });
+  // Use the mv() method to place the file somewhere on your server
+  propertyImage.mv(`./uploaded/${propertyImage.name}`, (err) => {
+    if (err) res.status(500).send(err);
+  });
+  const prop = JSON.parse(req.body.json)
 
-    res.status(200).json({'result': propData});
+  const landlord_id = await mapLandlordID(prop.user_id);
+  const property_name = prop.property_name;
+  const property_type = prop.property_type;
+  const contact_person = prop.contact_person;
+  const phone = prop.phone;
+  const lr_nos = prop.lr_nos;
+  const nos_units = prop.nos_units;
+  const description = prop.description;
+  const property_services = prop.property_services;
+  const property_img = propertyImage.name;
+
+  const propData = await Properties .create({
+      landlord_id: landlord_id,
+      property_name: property_name,
+      property_type: property_type,
+      contact_person: contact_person,
+      phone: phone,
+      lr_nos: lr_nos,
+      nos_units: nos_units,
+      description: description,
+      property_services: property_services,
+      property_img: property_img
+  });
+
+  res.status(200).json({'result': propData});
 });
 
 // EDIT PROPERTY DETAILS
