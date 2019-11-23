@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
 const Properties = require('../models/propertyModel');
 const Landlords = require('../models/landlordModel');
@@ -9,8 +10,9 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
+const uploadImage = require('../helper/uploadImages')
+const deleteFile = require('../helper/deleteUploadedFiles')
 require('express-async-errors');
-const Op = Sequelize.Op;
 
 // ***Function get single property records***
 const getProperty = async (prop_id) => {
@@ -114,18 +116,9 @@ router.get('/:page', [auth, admin], async (req, res) => {
 
 // REGISTER PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
-  const prop = JSON.parse(req.body.json)
-  let uploadPath = '';
-  if (req.files) {
-    const propertyImage = req.files.file;
-    const timeStamp = +new Date()
-    uploadPath = `/uploads/images/${prop.user_id}/properties/${timeStamp}_${propertyImage.name}`;
-
-    // Use the mv() method to place the file somewhere on your server
-    propertyImage.mv(`./uploads/images/${prop.user_id}/properties/${timeStamp}_${propertyImage.name}`, (err) => {
-      if (err) res.status(500).send(err);
-    });
-  }
+  const prop = JSON.parse(req.body.json);
+  let uploadPath = ''
+  if (req.files) uploadPath = uploadImage(req.files, prop);
 
   const landlord_id = await mapLandlordID(prop.user_id);
   const property_name = prop.property_name;
@@ -157,10 +150,9 @@ router.post('/register', [auth, landlord], async (req, res) => {
 // EDIT PROPERTY DETAILS
 router.post('/edit', [auth, landlord], async (req, res) => {
   const prop = JSON.parse(req.body.json)
-
   const propData = await Properties.findOne({
     where: {
-        id: prop.id
+      id: prop.id
     }
   });
 
@@ -177,6 +169,12 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   const property_services = propData.property_services;
   const property_img = propData.property_img;
 
+  let uploadPath = ''
+  if (req.files) {
+    deleteFile(`.${property_img}`)
+    uploadPath = uploadImage(req.files, prop);
+  }
+
   const newData = await Properties.update({
     landlord_id: prop.landlord_id || landlord_id,
     property_name: prop.property_name || property_name,
@@ -187,7 +185,7 @@ router.post('/edit', [auth, landlord], async (req, res) => {
     nos_units: prop.nos_units || nos_units,
     description: prop.description || description,
     property_services: prop.property_services || property_services,
-    property_img: prop.property_img || property_img
+    property_img: uploadPath || property_img
   },
   {
     where: {
