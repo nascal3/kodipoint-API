@@ -3,7 +3,7 @@
 .directory
 
 # directories holding uploads
-uploaded/
+uploaded/images/
 
 ### Node template
 # Logs
