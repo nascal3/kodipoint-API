@@ -6,5 +6,5 @@ module.exports = (file, property) => {
   propertyImage.mv(`./uploads/images/${property.user_id}/properties/${timeStamp}_${propertyImage.name}`, (err) => {
     if (err) throw new Error(err);
   });
-  return  `/uploads/images/${property.user_id}/properties/${timeStamp}_${propertyImage.name}`;
+  return  `/images/${property.user_id}/properties/${timeStamp}_${propertyImage.name}`;
 };
