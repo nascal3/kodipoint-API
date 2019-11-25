@@ -71,27 +71,27 @@ router.post('/landlord/search', [auth, landlord], async (req, res) => {
 
 // GET ALL PROPERTIES FOR SPECIFIC LANDLORD LIST .
 router.get('/landlord/:page', [auth, landlord], async (req, res) => {
-    const limit = 100;   // number of records per page
-    let offset;
-    const pageNumber = req.params.page;
+  const limit = 100;   // number of records per page
+  let offset;
+  const pageNumber = req.params.page;
 
-    const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
+  const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
 
-    const data = await Properties.findAndCountAll();
-    let page = req.params.page ? parseInt(req.params.page) : 1;  // page number
-    page <= 0 ? page = 1 : page = parseInt(req.params.page);
-    let pages = Math.ceil(data.count / limit);
-    offset = limit * (page - 1);
+  const data = await Properties.findAndCountAll();
+  let page = req.params.page ? parseInt(req.params.page) : 1;  // page number
+  page <= 0 ? page = 1 : page = parseInt(req.params.page);
+  let pages = Math.ceil(data.count / limit);
+  offset = limit * (page - 1);
 
-    const results = await Properties.findAll({
-        where: {
-            landlord_id: landlordID
-        },
-        limit: limit,
-        offset: offset
-    });
+  const results = await Properties.findAll({
+      where: {
+          landlord_id: landlordID
+      },
+      limit: limit,
+      offset: offset
+  });
 
-    res.status(200).json({'result': results, 'currentPage': pageNumber, 'pages': pages});
+  res.status(200).json({'result': results, 'currentPage': pageNumber, 'pages': pages});
 });
 
 // GET ALL PROPERTIES LIST .

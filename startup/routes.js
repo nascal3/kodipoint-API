@@ -4,6 +4,7 @@ const landlords = require('../routes/landlords');
 const tenants = require('../routes/tenants');
 const tenantsRec = require('../routes/tenantsRec');
 const properties = require('../routes/properties');
+const path = require("path");
 const fileUpload = require('express-fileupload');
 
 module.exports = (app) => {
@@ -21,4 +22,5 @@ module.exports = (app) => {
   app.use('/api/tenantsrec', tenantsRec);
   app.use('/api/properties', properties);
   app.use(express.static('public'));
+  app.use('/file', express.static(path.join(__dirname, '..' +'/uploads')));
 };
