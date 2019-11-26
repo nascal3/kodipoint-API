@@ -10,7 +10,7 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
-const uploadImage = require('../helper/uploadImages')
+const uploadImage = require('../helper/uploadFiles')
 const deleteFile = require('../helper/deleteUploadedFiles')
 require('express-async-errors');
 
@@ -118,7 +118,7 @@ router.get('/:page', [auth, admin], async (req, res) => {
 router.post('/register', [auth, landlord], async (req, res) => {
   const prop = JSON.parse(req.body.json);
   let uploadPath = ''
-  if (req.files) uploadPath = uploadImage(req.files, prop);
+  if (req.files) uploadPath = uploadImage(req.files, prop, 'property');
 
   const landlord_id = await mapLandlordID(prop.user_id);
   const property_name = prop.property_name;
@@ -171,8 +171,8 @@ router.post('/edit', [auth, landlord], async (req, res) => {
 
   let uploadPath = ''
   if (req.files) {
-    deleteFile(`.${property_img}`)
-    uploadPath = uploadImage(req.files, prop);
+    deleteFile(`.${property_img}`);
+    uploadPath = uploadImage(req.files, prop, 'property');
   }
 
   const newData = await Properties.update({
