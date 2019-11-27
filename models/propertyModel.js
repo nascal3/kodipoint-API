@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const connection= require('../startup/db');
 const landlordModel = require('./landlordModel');
+const userModel = require('./userModel');
 
 const propertyModel = connection.define('property', {
     id: {
@@ -34,6 +35,7 @@ const propertyModel = connection.define('property', {
     },
     lr_nos: {
         type: Sequelize.STRING,
+        unique: true,
         allowNull: false
     },
     nos_units: {
@@ -51,12 +53,20 @@ const propertyModel = connection.define('property', {
     property_img: {
         type:Sequelize.STRING,
         allowNull: true
+    },
+    updatedBy: {
+        type:Sequelize.INTEGER,
+        references: {
+            model: userModel,
+            key: userModel.id
+        },
+        allowNull: false
     }
+
 },{
     indexes:[
         {
-            unique: true,
-            fields:['id', 'lr_nos']
+            fields:['id', 'lr_nos', 'property_name']
         }
     ]
 });

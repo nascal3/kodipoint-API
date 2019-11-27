@@ -9,6 +9,7 @@ const userModel = connection.define('user', {
     },
     email: {
         type:Sequelize.STRING(50),
+        unique: true,
         allowNull: false
     },
     name: {

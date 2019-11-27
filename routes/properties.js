@@ -121,27 +121,20 @@ router.post('/register', [auth, landlord], async (req, res) => {
   if (req.files) uploadPath = uploadImage(req.files, prop, 'property');
 
   const landlord_id = await mapLandlordID(prop.user_id);
-  const property_name = prop.property_name;
-  const property_type = prop.property_type;
-  const contact_person = prop.contact_person;
-  const phone = prop.phone;
-  const lr_nos = prop.lr_nos;
-  const nos_units = prop.nos_units;
-  const description = prop.description;
-  const property_services = prop.property_services;
-  const property_img = uploadPath
+  if (!landlord_id) return res.status(401).json({'result': 'User is not a landlord'});
 
   const propData = await Properties .create({
-      landlord_id: landlord_id,
-      property_name: property_name,
-      property_type: property_type,
-      contact_person: contact_person,
-      phone: phone,
-      lr_nos: lr_nos,
-      nos_units: nos_units,
-      description: description,
-      property_services: property_services,
-      property_img: property_img
+    landlord_id: landlord_id,
+    property_name: prop.property_name,
+    property_type: prop.property_type,
+    contact_person: prop.contact_person,
+    phone: prop.phone,
+    lr_nos: prop.lr_nos,
+    nos_units: prop.nos_units,
+    description: prop.description,
+    property_services: prop.property_services,
+    property_img: uploadPath,
+    updatedBy: req.user.id
   });
 
   res.status(200).json({'result': propData});
@@ -185,7 +178,8 @@ router.post('/edit', [auth, landlord], async (req, res) => {
     nos_units: prop.nos_units || nos_units,
     description: prop.description || description,
     property_services: prop.property_services || property_services,
-    property_img: uploadPath || property_img
+    property_img: uploadPath || property_img,
+    updatedBy: req.user.id
   },
   {
     where: {
