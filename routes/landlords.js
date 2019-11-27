@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
+
 const Landlords = require('../models/landlordModel');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
@@ -8,7 +11,7 @@ const landlord = require('../middleware/landlordAuth');
 
 require('express-async-errors');
 
-// Function get single landlord data
+// ***Function get single landlord data using user_ID***
 const getLandlord = async (user_id) => {
     return await Landlords.findOne({
         where: {
@@ -19,13 +22,37 @@ const getLandlord = async (user_id) => {
 
 // GET ONE LANDLORD BY ID.
 router.get('/single', [auth, landlord], async (req, res) => {
-    const userData = await getLandlord(req.body.id);
+    const ID = req.body.id || req.user.id;
+    const userData = await getLandlord(ID);
     res.status(200).json({ 'results': userData});
+});
+
+// SEARCH ALL LANDLORDS.
+router.post('/search', [auth, landlord], async (req, res) => {
+    const searchPhrase = req.body.search_phrase;
+
+    const searchResults  = await Landlords.findAll({
+        where: {
+            [Op.or]: [
+              {
+                  name: {
+                      [Op.like]: `%${searchPhrase}%`
+                  }
+              },
+              {
+                  national_id: {
+                      [Op.like]: `%${searchPhrase}%`
+                  }
+              }
+            ]
+        }
+    });
+    res.status(200).json({ 'results': searchResults});
 });
 
 // GET ALL LANDLORDS LIST .
 router.get('/:page', [auth, admin], async (req, res) => {
-    let limit = 50;   // number of records per page
+    let limit = 100;   // number of records per page
     let offset;
     let pageNumber = req.params.page;
 
@@ -46,31 +73,20 @@ router.get('/:page', [auth, admin], async (req, res) => {
 // REGISTER LANDLORDS PERSONAL DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
-    let userID = req.body.user_id || req.user.id;
-    let name = req.body.name;
-    let email = req.user.email;
-    let nationalID = req.body.national_id;
-    let kraPIN = req.body.kra_pin;
-    let phone = req.body.phone;
-    let bankName = req.body.bank_name;
-    let bankBranch = req.body.bank_branch;
-    let bankACC = req.body.bank_acc;
-    let bankSwift = req.body.bank_swift;
-    let bank_currency = req.body.bank_currency;
     let avatar = req.body.avatar;
 
     const userData = await Landlords.create({
-        user_id: userID,
-        name: name,
-        email: email,
-        national_id: nationalID,
-        kra_pin: kraPIN,
-        phone: phone,
-        bank_name: bankName,
-        bank_branch: bankBranch,
-        bank_acc: bankACC,
-        bank_swift: bankSwift,
-        bank_currency: bank_currency,
+        user_id: req.body.user_id || req.user.id,
+        name: req.body.name,
+        email: req.user.email,
+        national_id: req.body.national_id,
+        kra_pin: req.body.kra_pin,
+        phone: req.body.phone,
+        bank_name: req.body.bank_name,
+        bank_branch: req.body.bank_branch,
+        bank_acc: req.body.bank_acc,
+        bank_swift: req.body.bank_swift,
+        bank_currency: req.body.bank_currency,
         avatar: avatar
     });
 
@@ -114,13 +130,11 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
         bank_swift: req.body.bank_swift || bankSwift,
         bank_currency: req.body.bank_currency || bank_currency,
         avatar: req.body.avatar || avatar
-    },
-        {
-            where: {
-                user_id: userID
-            }
+    },{
+        where: {
+            user_id: userID
         }
-    );
+    });
 
    const changedData = await getLandlord(userID);
 
