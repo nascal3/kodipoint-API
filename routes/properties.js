@@ -30,7 +30,7 @@ const mapLandlordID = async (user_id) => {
             user_id: user_id
         }
     })
-    return results.dataValues.id
+    return results ? results.dataValues.id : 0
 };
 
 // GET ONE PROPERTY BY ID.
