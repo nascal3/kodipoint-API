@@ -121,7 +121,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
   if (req.files) uploadPath = uploadImage(req.files, prop, 'property');
 
   const landlord_id = await mapLandlordID(prop.user_id);
-  if (!landlord_id) return res.status(401).json({'result': 'User is not a landlord'});
+  if (!landlord_id) return res.status(422).json({'result': 'A landlord user is missing'});
 
   const propData = await Properties .create({
     landlord_id: landlord_id,
