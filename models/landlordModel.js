@@ -58,6 +58,7 @@ const landlordModel = connection.define('landlord', {
     },
     bank_currency: {
         type:Sequelize.STRING,
+        defaultValue: 'Ksh',
         allowNull: true
     },
     avatar: {
