@@ -9,6 +9,8 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
+const uploadImage = require('../helper/uploadFiles')
+const deleteFile = require('../helper/deleteUploadedFiles')
 require('express-async-errors');
 
 // ***Function get single landlord data using user_ID***
@@ -73,21 +75,24 @@ router.get('/:page', [auth, admin], async (req, res) => {
 // REGISTER LANDLORDS PERSONAL DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
-    let avatar = req.body.avatar;
+    const info = JSON.parse(req.body.json);
+    let uploadPath = ''
+    if (req.files) uploadPath = uploadImage(req.files, info, 'user');
 
     const userData = await Landlords.create({
         user_id: req.body.user_id || req.user.id,
-        name: req.body.name,
-        email: req.user.email,
-        national_id: req.body.national_id,
-        kra_pin: req.body.kra_pin,
-        phone: req.body.phone,
-        bank_name: req.body.bank_name,
-        bank_branch: req.body.bank_branch,
-        bank_acc: req.body.bank_acc,
-        bank_swift: req.body.bank_swift,
-        bank_currency: req.body.bank_currency,
-        avatar: avatar
+        name: info.name,
+        email: info.email,
+        national_id: info.national_id,
+        kra_pin: info.kra_pin,
+        phone: info.phone,
+        bank_name: info.bank_name,
+        bank_branch: info.bank_branch,
+        bank_acc: info.bank_acc,
+        bank_swift: info.bank_swift,
+        bank_currency: info.bank_currency,
+        updatedBy: req.user.id,
+        avatar: uploadPath
     });
 
     res.status(200).json({'result': userData});
