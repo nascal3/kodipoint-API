@@ -23,14 +23,14 @@ const getProperty = async (prop_id) => {
     });
 };
 
-// ***Function get/match user ID to landlord ID***
+// ***Function get/match user ID to landlord_ID***
 const mapLandlordID = async (user_id) => {
     const results = await Landlords.findOne({
         where: {
             user_id: user_id
         }
     })
-    return results ? results.dataValues.id : 0
+    return results ? results.dataValues.landlord_id : 0
 };
 
 // GET ONE PROPERTY BY ID.
@@ -53,7 +53,7 @@ router.post('/search', [auth, landlord], async (req, res) => {
   res.status(200).json({ 'results': searchResults});
 })
 
-// SEARCH PROPERTY FOR SINGLE LANDLORD BY ID.
+// SEARCH PROPERTY FOR SINGLE LANDLORD BY USER_ID.
 router.post('/landlord/search', [auth, landlord], async (req, res) => {
   const property_name = req.body.property_name;
   const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
