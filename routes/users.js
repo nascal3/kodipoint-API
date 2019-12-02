@@ -89,7 +89,7 @@ router.post('/register', async (req, res) => {
         }
     });
 
-    if (userEmail !== null) return res.status(400).json({'Error': 'The following Email/Username already exists!'});
+    if (userEmail !== null) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     // SALT THE PASSWORD AND INSERT NEW USER INTO DB
     const salt = await bcrypt.genSalt(10);
