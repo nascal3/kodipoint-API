@@ -76,27 +76,39 @@ router.get('/:page', [auth, admin], async (req, res) => {
 router.post('/register', [auth, landlord], async (req, res) => {
 
     const info = JSON.parse(req.body.json);
+
+    const landlordsResults  = await Landlords.findAll({
+        where: {
+            [Op.or]: [
+                { kra_pin: info.kra_pin },
+                { national_id: info.national_id }
+            ]
+        }
+    });
+
+    if (Object.keys(landlordsResults).length) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
+
+
     let uploadPath = ''
     if (req.files) uploadPath = uploadImage(req.files, info, 'user');
-    console.log('>>>', req.files, 'XXX', info, 'upload', uploadPath)
 
-    // const userData = await Landlords.create({
-    //     user_id: req.body.user_id || req.user.id,
-    //     name: info.name,
-    //     email: info.email,
-    //     national_id: info.national_id,
-    //     kra_pin: info.kra_pin,
-    //     phone: info.phone,
-    //     bank_name: info.bank_name,
-    //     bank_branch: info.bank_branch,
-    //     bank_acc: info.bank_acc,
-    //     bank_swift: info.bank_swift,
-    //     bank_currency: info.bank_currency,
-    //     updatedBy: req.user.id,
-    //     avatar: uploadPath
-    // });
-    //
-    // res.status(200).json({'result': userData});
+    const userData = await Landlords.create({
+        user_id: info.user_id,
+        name: info.name,
+        email: info.email,
+        national_id: info.national_id,
+        kra_pin: info.kra_pin,
+        phone: info.phone,
+        bank_name: info.bank_name,
+        bank_branch: info.bank_branch,
+        bank_acc: info.bank_acc,
+        bank_swift: info.bank_swift,
+        bank_currency: info.bank_currency,
+        updatedBy: req.user.id,
+        avatar: uploadPath
+    });
+
+    res.status(200).json({'result': userData});
 });
 
 // EDIT LANDLORDS PERSONAL DETAILS
