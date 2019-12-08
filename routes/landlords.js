@@ -9,6 +9,9 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
+
+const newUser = require('./users');
+
 const uploadImage = require('../helper/uploadFiles')
 const deleteFile = require('../helper/deleteUploadedFiles')
 require('express-async-errors');
@@ -88,12 +91,21 @@ router.post('/register', [auth, landlord], async (req, res) => {
 
     if (Object.keys(landlordsResults).length) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
 
+    const params = {
+        'username':info.email,
+        'password':'123456',
+        'name':info.name,
+        'role':info.role
+    };
+
+    const createdUser = await newUser.createNewUser(params);
+    if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     let uploadPath = ''
     if (req.files) uploadPath = uploadImage(req.files, info, 'user');
 
     const userData = await Landlords.create({
-        user_id: info.user_id,
+        user_id: createdUser.data.dataValues.id,
         name: info.name,
         email: info.email,
         national_id: info.national_id,
