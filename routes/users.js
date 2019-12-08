@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const Users = require('../models/userModel');
 
 const generateToken = require('../middleware/usersTokenGen');
@@ -76,7 +78,7 @@ router.post('/login', async (req, res) => {
 
 });
 
-// ***Function crete a new user to DB***
+// ***Function create a new user to DB***
 const createUser = async (user_info) => {
     const userEmail = await Users.findOne({
         where: {
@@ -126,6 +128,40 @@ router.post('/register', async (req, res) => {
     return res.header('Authorization', results.token).status(200).json({'user':results.data, 'token': results.token});
 
 });
+
+// ***Function edit a user details***
+const editUser = async (user_info) => {
+    const userEmail = await Users.findOne({
+        where: {
+            email: user_info.username,
+            [Op.and]: {
+                id: {
+                    [Op.ne]: user_info.id
+                }
+            }
+        }
+    });
+
+    if (userEmail !== null) return false;
+
+    const newData = await Users.update({
+        email: user_info.username,
+        name: user_info.name,
+        role: user_info.role
+    },{
+        where: {
+            id: user_info.id
+        }
+    });
+
+    // hide data from json results
+    return {
+        ...newData,
+        password: undefined,
+        createdAt: undefined,
+        updatedAt: undefined
+    }
+}
 
 // USERS CHANGE THEIR PASSWORD
 router.post('/change/password', auth, async (req, res) => {
@@ -200,4 +236,8 @@ router.post('/reset/password', auth, async (req, res) => {
 
 });
 
-module.exports = { router: router, createNewUser: createUser};
+module.exports = {
+    router: router,
+    createNewUser: createUser,
+    editUser: editUser
+};

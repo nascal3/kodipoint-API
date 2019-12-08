@@ -11,6 +11,7 @@ const landlord = require('../middleware/landlordAuth');
 
 
 const newUser = require('./users');
+const editUser = require('./users');
 
 const uploadImage = require('../helper/uploadFiles')
 const deleteFile = require('../helper/deleteUploadedFiles')
@@ -75,11 +76,8 @@ router.get('/:page', [auth, admin], async (req, res) => {
     res.status(200).json({'result': users, 'currentPage': pageNumber, 'pages': pages});
 });
 
-// REGISTER LANDLORDS PERSONAL DETAILS
-router.post('/register', [auth, landlord], async (req, res) => {
-
-    const info = JSON.parse(req.body.json);
-
+//***Function look for duplicates of KRA Pin or national ID***
+const duplicates = async (info) => {
     const landlordsResults  = await Landlords.findAll({
         where: {
             [Op.or]: [
@@ -88,8 +86,34 @@ router.post('/register', [auth, landlord], async (req, res) => {
             ]
         }
     });
+    return Object.keys(landlordsResults).length
+}
 
-    if (Object.keys(landlordsResults).length) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
+//***Function look for duplicates of KRA Pin or national ID with current
+// user ID exception***
+const duplicatesExcept = async (info) => {
+    const landlordsResults  = await Landlords.findAll({
+        where: {
+            [Op.or]: [
+                { kra_pin: info.kra_pin },
+                { national_id: info.national_id }
+            ],
+            [Op.and]: {
+                user_id: {
+                    [Op.ne]: info.user_id
+                }
+            }
+        }
+    });
+    return Object.keys(landlordsResults).length
+}
+
+// REGISTER LANDLORDS PERSONAL DETAILS
+router.post('/register', [auth, landlord], async (req, res) => {
+
+    const info = JSON.parse(req.body.json);
+    const numberDuplicates = await duplicates(info)
+    if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
 
     const params = {
         'username':info.email,
@@ -126,7 +150,8 @@ router.post('/register', [auth, landlord], async (req, res) => {
 // EDIT LANDLORDS PERSONAL DETAILS
 router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
-    let userID = req.body.id || req.user.id;
+    const info = JSON.parse(req.body.json);
+    const userID = req.user.role === 'admin' ? info.user_id : req.user.id;
 
     const userData = await Landlords.findOne({
         where: {
@@ -134,32 +159,51 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
         }
     });
 
-    if (!userData) return res.status(500).json({'Error': 'User not found'});
+    if (!userData) return res.status(404).json({'Error': 'User not found'});
 
-    let name = userData.name;
-    let email = userData.email;
-    let nationalID = userData.national_id;
-    let kraPIN = userData.kra_pin;
-    let phone = userData.phone;
-    let bankName = userData.bank_name;
-    let bankBranch = userData.bank_branch;
-    let bankACC = userData.bank_acc;
-    let bankSwift = userData.bank_swift;
-    let bank_currency = userData.bank_currency;
-    let avatar = userData.avatar;
+    const numberDuplicates = await duplicatesExcept(info)
+    if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
+
+    const params = {
+        'id': userID,
+        'username':info.email,
+        'name':info.name,
+        'role':info.role
+    };
+    const editedUser = await editUser.editUser(params)
+    if (!editedUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
+
+    const name = userData.name;
+    const email = userData.email;
+    const nationalID = userData.national_id;
+    const kraPIN = userData.kra_pin;
+    const phone = userData.phone;
+    const bankName = userData.bank_name;
+    const bankBranch = userData.bank_branch;
+    const bankACC = userData.bank_acc;
+    const bankSwift = userData.bank_swift;
+    const bank_currency = userData.bank_currency;
+    const avatar = userData.avatar;
+
+    let uploadPath = ''
+    if (req.files) {
+        deleteFile(`.${avatar}`);
+        uploadPath = uploadImage(req.files, info, 'user');
+    }
 
     const newData = await Landlords.update({
-        name: req.body.name || name,
-        email: req.body.email || email,
-        national_id: req.body.national_id || nationalID,
-        kra_pin: req.body.kra_pin || kraPIN,
-        phone: req.body.phone || phone,
-        bank_name: req.body.bank_name || bankName,
-        bank_branch: req.body. bank_branch || bankBranch,
-        bank_acc: req.body.bank_acc || bankACC,
-        bank_swift: req.body.bank_swift || bankSwift,
-        bank_currency: req.body.bank_currency || bank_currency,
-        avatar: req.body.avatar || avatar
+        name: info.name || name,
+        email: info.email || email,
+        national_id: info.national_id || nationalID,
+        kra_pin: info.kra_pin || kraPIN,
+        phone: info.phone || phone,
+        bank_name: info.bank_name || bankName,
+        bank_branch: info.bank_branch || bankBranch,
+        bank_acc: info.bank_acc || bankACC,
+        bank_swift: info.bank_swift || bankSwift,
+        bank_currency: info.bank_currency || bank_currency,
+        avatar: uploadPath || avatar,
+        updatedBy:  req.user.id
     },{
         where: {
             user_id: userID

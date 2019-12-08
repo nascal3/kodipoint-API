@@ -149,7 +149,7 @@ router.post('/edit', [auth, landlord], async (req, res) => {
     }
   });
 
-  if (!propData) return res.status(500).json({'Error': 'Property not found'});
+  if (!propData) return res.status(404).json({'Error': 'Property not found'});
 
   const landlord_id = propData.landlord_id;
   const property_name = propData.property_name;
