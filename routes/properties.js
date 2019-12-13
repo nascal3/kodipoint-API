@@ -70,12 +70,13 @@ router.post('/landlord/search', [auth, landlord], async (req, res) => {
 })
 
 // GET ALL PROPERTIES FOR SPECIFIC LANDLORD LIST .
-router.get('/landlord/:page', [auth, landlord], async (req, res) => {
+router.post('/landlord/:page', [auth, landlord], async (req, res) => {
   const limit = 100;   // number of records per page
   let offset;
   const pageNumber = req.params.page;
 
-  const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
+  const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
+  const landlordID = await mapLandlordID(userID); // get user ID from token in header or request body
 
   const data = await Properties.findAndCountAll();
   let page = req.params.page ? parseInt(req.params.page) : 1;  // page number
