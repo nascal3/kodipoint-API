@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const Users = require('../models/userModel');
 
 const generateToken = require('../middleware/usersTokenGen');
@@ -34,10 +36,10 @@ router.get('/:page', [auth, admin], async (req, res) => {
 });
 
 // GET ONE USER BY ID.
-router.get('/', [auth, admin], async (req, res) => {
+router.get('/user/:id', [auth, admin], async (req, res) => {
     const user = await Users.findOne({
         where: {
-            id: req.body.id
+            id: req.params.id
         }
     });
     res.status(200).json({ 'results': user});
@@ -76,30 +78,25 @@ router.post('/login', async (req, res) => {
 
 });
 
-// REGISTER NEW USERS PROCESS
-router.post('/register', async (req, res) => {
-    let username = req.body.username;
-    let password = req.body.password;
-    let name = req.body.name;
-    let role = req.body.role;
-
+// ***Function create a new user to DB***
+const createUser = async (user_info) => {
     const userEmail = await Users.findOne({
         where: {
-            email: username
+            email: user_info.username
         }
     });
 
-    if (userEmail !== null) return res.status(400).json({'Error': 'The following Email/Username already exists!'});
+    if (userEmail !== null) return false;
 
     // SALT THE PASSWORD AND INSERT NEW USER INTO DB
     const salt = await bcrypt.genSalt(10);
-    const salted_password = await bcrypt.hash(password, salt);
+    const salted_password = await bcrypt.hash(user_info.password, salt);
 
     const userData = await Users.create({
-        email: username,
+        email: user_info.username,
         password: salted_password,
-        name: name,
-        role: role
+        name: user_info.name,
+        role: user_info.role
     });
 
     //generate User token
@@ -110,10 +107,61 @@ router.post('/register', async (req, res) => {
     userData.createdAt = undefined;
     userData.updatedAt = undefined;
 
+    return {'data': userData, 'token': token};
+};
+
+// REGISTER NEW USERS PROCESS
+router.post('/register', async (req, res) => {
+
+    const params = {
+        'username':req.body.username,
+        'password':req.body.password,
+        'name':req.body.name,
+        'role':req.body.role
+    };
+
+    const results = await createUser(params);
+
+    if (!results) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
+
     // set authorisation header
-    return res.header('Authorization', token).status(200).json({'user':userData, 'token': token});
+    return res.header('Authorization', results.token).status(200).json({'user':results.data, 'token': results.token});
 
 });
+
+// ***Function edit a user details***
+const editUser = async (user_info) => {
+    const userEmail = await Users.findOne({
+        where: {
+            email: user_info.username,
+            [Op.and]: {
+                id: {
+                    [Op.ne]: user_info.id
+                }
+            }
+        }
+    });
+
+    if (userEmail !== null) return false;
+
+    const newData = await Users.update({
+        email: user_info.username,
+        name: user_info.name,
+        role: user_info.role
+    },{
+        where: {
+            id: user_info.id
+        }
+    });
+
+    // hide data from json results
+    return {
+        ...newData,
+        password: undefined,
+        createdAt: undefined,
+        updatedAt: undefined
+    }
+}
 
 // USERS CHANGE THEIR PASSWORD
 router.post('/change/password', auth, async (req, res) => {
@@ -188,4 +236,8 @@ router.post('/reset/password', auth, async (req, res) => {
 
 });
 
-module.exports = router;
+module.exports = {
+    router: router,
+    createNewUser: createUser,
+    editUser: editUser
+};

@@ -16,7 +16,7 @@ module.exports = (app) => {
       tempFileDir : '/tmp/'
     })
   );
-  app.use('/api/users', users);
+  app.use('/api/users', users.router);
   app.use('/api/landlords', landlords);
   app.use('/api/tenants', tenants);
   app.use('/api/tenantsrec', tenantsRec);

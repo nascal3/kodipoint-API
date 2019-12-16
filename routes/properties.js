@@ -23,14 +23,14 @@ const getProperty = async (prop_id) => {
     });
 };
 
-// ***Function get/match user ID to landlord ID***
+// ***Function get/match user ID to landlord_ID***
 const mapLandlordID = async (user_id) => {
     const results = await Landlords.findOne({
         where: {
             user_id: user_id
         }
     })
-    return results ? results.dataValues.id : 0
+    return results ? results.dataValues.landlord_id : 0
 };
 
 // GET ONE PROPERTY BY ID.
@@ -53,10 +53,11 @@ router.post('/search', [auth, landlord], async (req, res) => {
   res.status(200).json({ 'results': searchResults});
 })
 
-// SEARCH PROPERTY FOR SINGLE LANDLORD BY ID.
+// SEARCH PROPERTY FOR SINGLE LANDLORD BY USER_ID.
 router.post('/landlord/search', [auth, landlord], async (req, res) => {
   const property_name = req.body.property_name;
-  const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
+  const userId = req.body.user_id ? req.body.user_id : req.user.id;
+  const landlordID = await mapLandlordID( userId); // get user ID from token in header or request body
 
   const searchResults  = await Properties.findAll({
     where: {
@@ -70,12 +71,13 @@ router.post('/landlord/search', [auth, landlord], async (req, res) => {
 })
 
 // GET ALL PROPERTIES FOR SPECIFIC LANDLORD LIST .
-router.get('/landlord/:page', [auth, landlord], async (req, res) => {
+router.post('/landlord/:page', [auth, landlord], async (req, res) => {
   const limit = 100;   // number of records per page
   let offset;
   const pageNumber = req.params.page;
 
-  const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
+  const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
+  const landlordID = await mapLandlordID(userID); // get user ID from token in header or request body
 
   const data = await Properties.findAndCountAll();
   let page = req.params.page ? parseInt(req.params.page) : 1;  // page number
@@ -149,7 +151,7 @@ router.post('/edit', [auth, landlord], async (req, res) => {
     }
   });
 
-  if (!propData) return res.status(500).json({'Error': 'Property not found'});
+  if (!propData) return res.status(404).json({'Error': 'Property not found'});
 
   const landlord_id = propData.landlord_id;
   const property_name = propData.property_name;
