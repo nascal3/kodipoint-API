@@ -56,7 +56,8 @@ router.post('/search', [auth, landlord], async (req, res) => {
 // SEARCH PROPERTY FOR SINGLE LANDLORD BY USER_ID.
 router.post('/landlord/search', [auth, landlord], async (req, res) => {
   const property_name = req.body.property_name;
-  const landlordID = await mapLandlordID(req.user.id); // get user ID from token in header
+  const userId = req.body.user_id ? req.body.user_id : req.user.id;
+  const landlordID = await mapLandlordID( userId); // get user ID from token in header or request body
 
   const searchResults  = await Properties.findAll({
     where: {
