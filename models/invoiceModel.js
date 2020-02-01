@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
 const connection = require('../startup/db');
 const tenantModel = require('./tenantModel');
-const landlordModel = require('./landlordModel');
 const propertyModel = require('./propertyModel');
 
 const invoiceModel = connection.define('invoice', {
@@ -20,10 +19,6 @@ const invoiceModel = connection.define('invoice', {
     },
     landlord_id: {
         type: Sequelize.INTEGER,
-        references: {
-            model: landlordModel,
-            key: landlordModel.id
-        },
         allowNull: false
     },
     property_id: {
