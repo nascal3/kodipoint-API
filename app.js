@@ -32,6 +32,10 @@ sequelize.sync().then(() => {
     console.log('DB_PASSWORD -->', process.env.DB_PASSWORD);
     console.log('JWT_KEY -->', process.env.JWT_SECRET);
 }).catch( err => {
+    console.log('DB_HOST -->', process.env.DB_HOST);
+    console.log('DB_USER -->', process.env.DB_USER);
+    console.log('DB_PASSWORD -->', process.env.DB_PASSWORD);
+    console.log('JWT_KEY -->', process.env.JWT_SECRET);
     console.error('Error occurred: ',err.name, '<===> Message: ',err.message);
 });
 
