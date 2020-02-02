@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
 
 const  auth = (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:8080/");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
   const token = req.header('Authorization');
   if (!token) return res.status(401).json({'Error':'Access denied, user not logged in or no token provided!'});
 

@@ -1,5 +1,4 @@
 const express = require('express');
-const cors = require('cors')
 const router = express.Router();
 const bcrypt = require('bcrypt');
 
@@ -47,7 +46,7 @@ router.get('/user/:id', [auth, admin], async (req, res) => {
 })
 
 // LOGIN USERS PROCESS
-router.post('/login', cors(), async (req, res) => {
+router.post('/login', async (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
 
