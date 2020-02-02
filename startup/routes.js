@@ -9,8 +9,8 @@ const path = require("path");
 const fileUpload = require('express-fileupload');
 
 module.exports = (app) => {
-  app.use(cors());
   app.use(
+    cors(),
     express.json(),
     fileUpload({
       createParentPath: true,
