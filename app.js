@@ -1,10 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const app= express();
-
-// ADDED CORS
-app.use(cors());
 
 // CALL TO DB CONNECTION FOLDER
 const sequelize = require('./startup/db');

@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const users = require('../routes/users');
 const landlords = require('../routes/landlords');
 const tenants = require('../routes/tenants');
@@ -8,6 +9,7 @@ const path = require("path");
 const fileUpload = require('express-fileupload');
 
 module.exports = (app) => {
+  app.use(cors());
   app.use(
     express.json(),
     fileUpload({
