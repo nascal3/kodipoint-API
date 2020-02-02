@@ -4,9 +4,7 @@ const cors = require('cors');
 const app= express();
 
 // ADDED CORS
-app.use(cors({
-    origin: 'http://localhost:8080'
-}));
+app.use(cors());
 
 // CALL TO DB CONNECTION FOLDER
 const sequelize = require('./startup/db');
