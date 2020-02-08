@@ -5,6 +5,7 @@ const Tenants = require('../models/tenantModel');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const tenant = require('../middleware/tenantAuth');
+const landlord = require('../middleware/landlordAuth');
 
 require('express-async-errors');
 
@@ -24,23 +25,35 @@ router.get('/single', [auth, tenant], async (req, res) => {
 })
 
 // GET ALL TENANTS LIST .
-router.get('/:page', [auth, admin], async (req, res) => {
-    let limit = 100;   // number of records per page
-    let offset;
-    let pageNumber = req.params.page;
+router.get('/all', [auth, admin], async (req, res) => {
+    const limit= req.body.limit;   // number of records per page
+    const offset = req.body.offset;
 
-    const data = await Tenants.findAndCountAll();
-    let page = req.params.page ? parseInt(req.params.page) : 1;      // page number
-    page <= 0 ? page = 1 : page = parseInt(req.params.page);
-    let pages = Math.ceil(data.count / limit);
-    offset = limit * (page - 1);
-
-    const users = await Tenants.findAll({
+    const tenants = await Tenants.findAll({
         limit: limit,
         offset: offset
     });
 
-    res.status(200).json({'result': users, 'currentPage': pageNumber, 'pages': pages});
+    res.status(200).json({'result':tenants});
+});
+
+// GET ALL TENANTS FOR SPECIFIC LANDLORD LIST .
+router.post('/landlord', [auth, landlord], async (req, res) => {
+    const limit= req.body.limit;   // number of records per page
+    const offset = req.body.offset;
+
+    const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
+    const landlordID = await mapLandlordID(userID); // get user ID from token in header or request body
+
+    const tenants = await Tenants.findAll({
+        where: {
+            landlord_id: landlordID
+        },
+        limit: limit,
+        offset: offset
+    });
+
+    res.status(200).json({'result': tenants});
 });
 
 // REGISTER TENANTS PERSONAL DETAILS
