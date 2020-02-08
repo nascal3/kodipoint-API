@@ -42,6 +42,7 @@ router.get('/user/:id', [auth, admin], async (req, res) => {
             id: req.params.id
         }
     });
+    user.password = undefined;
     res.status(200).json({ 'results': user});
 })
 
