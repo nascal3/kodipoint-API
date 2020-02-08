@@ -57,23 +57,16 @@ router.post('/search', [auth, landlord], async (req, res) => {
 });
 
 // GET ALL LANDLORDS LIST .
-router.get('/:page', [auth, admin], async (req, res) => {
-    let limit = 100;   // number of records per page
-    let offset;
-    let pageNumber = req.params.page;
-
-    const data = await Landlords.findAndCountAll();
-    let page = req.params.page ? parseInt(req.params.page) : 1;      // page number
-    page <= 0 ? page = 1 : page = parseInt(req.params.page);
-    let pages = Math.ceil(data.count / limit);
-    offset = limit * (page - 1);
+router.get('/all', [auth, admin], async (req, res) => {
+    const limit= req.body.limit;   // number of records per page
+    const offset = req.body.offset;
 
     const users = await Landlords.findAll({
         limit: limit,
         offset: offset
     });
 
-    res.status(200).json({'result': users, 'currentPage': pageNumber, 'pages': pages});
+    res.status(200).json({'result': users});
 });
 
 //***Function look for duplicates of KRA Pin or national ID***

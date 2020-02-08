@@ -25,7 +25,7 @@ router.get('/single', [auth, tenant], async (req, res) => {
 
 // GET ALL TENANTS LIST .
 router.get('/:page', [auth, admin], async (req, res) => {
-    let limit = 50;   // number of records per page
+    let limit = 100;   // number of records per page
     let offset;
     let pageNumber = req.params.page;
 
