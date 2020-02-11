@@ -13,26 +13,17 @@ const admin = require('../middleware/adminAuth');
 require('express-async-errors');
 
 // GET ALL USERS LIST .
-router.get('/:page', [auth, admin], async (req, res) => {
-    let limit = 100;   // number of records per page
-    let offset;
-    let pageNumber = req.params.page;
-
-    const data = await Users.findAndCountAll();
-    let page = req.params.page ? parseInt(req.params.page) : 1;      // page number
-    page <= 0 ? page = 1 : page = parseInt(req.params.page);
-    let pages = Math.ceil(data.count / limit);
-    offset = limit * (page - 1);
+router.get('/all', [auth, admin], async (req, res) => {
 
     const users = await Users.findAll({
-        limit: limit,
-        offset: offset
+        attributes: {
+            exclude: ['password']
+        },
+        limit: req.body.limit,
+        offset: req.body.offset
     });
 
-    // remove password data from json results
-    users.password = undefined;
-
-    res.status(200).json({'result': users, 'currentPage': pageNumber, 'pages': pages});
+    res.status(200).json({'result': users});
 });
 
 // GET ONE USER BY ID.
@@ -42,6 +33,7 @@ router.get('/user/:id', [auth, admin], async (req, res) => {
             id: req.params.id
         }
     });
+    user.password = undefined;
     res.status(200).json({ 'results': user});
 })
 
@@ -157,9 +149,7 @@ const editUser = async (user_info) => {
     // hide data from json results
     return {
         ...newData,
-        password: undefined,
-        createdAt: undefined,
-        updatedAt: undefined
+        password: undefined
     }
 }
 

@@ -29,15 +29,15 @@ const mapLandlordID = async (user_id) => {
         where: {
             user_id: user_id
         }
-    })
-    return results ? results.dataValues.landlord_id : 0
+    });
+    return results ? results.dataValues.landlord_id : 0;
 };
 
 // GET ONE PROPERTY BY ID.
 router.get('/single', [auth, admin], async (req, res) => {
     const propData = await getProperty(req.body.id);
     res.status(200).json({ 'results': propData});
-})
+});
 
 // SEARCH ALL PROPERTY .
 router.post('/search', [auth, landlord], async (req, res) => {
@@ -51,7 +51,7 @@ router.post('/search', [auth, landlord], async (req, res) => {
     }
   });
   res.status(200).json({ 'results': searchResults});
-})
+});
 
 // SEARCH PROPERTY FOR SINGLE LANDLORD BY USER_ID.
 router.post('/landlord/search', [auth, landlord], async (req, res) => {
@@ -71,19 +71,12 @@ router.post('/landlord/search', [auth, landlord], async (req, res) => {
 })
 
 // GET ALL PROPERTIES FOR SPECIFIC LANDLORD LIST .
-router.post('/landlord/:page', [auth, landlord], async (req, res) => {
-  const limit = 100;   // number of records per page
-  let offset;
-  const pageNumber = req.params.page;
+router.post('/landlord', [auth, landlord], async (req, res) => {
+  const limit= req.body.limit;   // number of records per page
+  const offset = req.body.offset;
 
   const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
   const landlordID = await mapLandlordID(userID); // get user ID from token in header or request body
-
-  const data = await Properties.findAndCountAll();
-  let page = req.params.page ? parseInt(req.params.page) : 1;  // page number
-  page <= 0 ? page = 1 : page = parseInt(req.params.page);
-  let pages = Math.ceil(data.count / limit);
-  offset = limit * (page - 1);
 
   const results = await Properties.findAll({
       where: {
@@ -93,33 +86,26 @@ router.post('/landlord/:page', [auth, landlord], async (req, res) => {
       offset: offset
   });
 
-  res.status(200).json({'result': results, 'currentPage': pageNumber, 'pages': pages});
+  res.status(200).json({'result': results});
 });
 
 // GET ALL PROPERTIES LIST .
-router.get('/:page', [auth, admin], async (req, res) => {
-    const limit = 100;   // number of records per page
-    let offset;
-    const pageNumber = req.params.page;
+router.get('/all', [auth, admin], async (req, res) => {
+  const limit= req.body.limit;   // number of records per page
+  const offset = req.body.offset;
 
-    const data = await Properties.findAndCountAll();
-    let page = req.params.page ? parseInt(req.params.page) : 1;      // page number
-    page <= 0 ? page = 1 : page = parseInt(req.params.page);
-    const pages = Math.ceil(data.count / limit);
-    offset = limit * (page - 1);
+  const properties = await Properties.findAll({
+      limit: limit,
+      offset: offset
+  });
 
-    const users = await Properties.findAll({
-        limit: limit,
-        offset: offset
-    });
-
-    res.status(200).json({'result': users, 'currentPage': pageNumber, 'pages': pages});
+  res.status(200).json({'result': properties});
 });
 
 // REGISTER PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
   const prop = JSON.parse(req.body.json);
-  let uploadPath = ''
+  let uploadPath = '';
   if (req.files) uploadPath = uploadImage(req.files, prop, 'property');
 
   const landlord_id = await mapLandlordID(prop.user_id);
@@ -194,4 +180,7 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
-module.exports = router;
+module.exports = {
+  router: router,
+  mapLandlordID: mapLandlordID,
+};
