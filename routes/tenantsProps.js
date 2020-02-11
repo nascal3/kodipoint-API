@@ -74,7 +74,7 @@ router.post('/movein', [auth, admin], async (req, res) => {
     res.status(200).json({'result': userData});
 });
 
-// EDIT TENANTS RENTING DETAILS
+// EDIT TENANTS RENTING DETAILS (also used for moving tenant out of rented property)
 router.post('/edit', [auth, admin], async (req, res) => {
 
     const editedBy = req.user.id;
