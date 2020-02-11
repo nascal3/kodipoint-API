@@ -22,7 +22,7 @@ module.exports = (app) => {
   app.use('/api/landlords', landlords);
   app.use('/api/tenants', tenants);
   app.use('/api/tenantsrec', tenantsProps);
-  app.use('/api/properties', properties);
+  app.use('/api/properties', properties.router);
   app.use(express.static('public'));
   app.use('/file', express.static(path.join(__dirname, '..' +'/uploads')));
 };

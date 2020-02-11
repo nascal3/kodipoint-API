@@ -180,4 +180,7 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
-module.exports = router;
+module.exports = {
+  router: router,
+  mapLandlordID: mapLandlordID,
+};
