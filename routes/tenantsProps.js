@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const router = express.Router();
 
-const TenantsRec = require('../models/tenantRecModel');
+const TenantsProps = require('../models/tenantPropsModel');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlords = require('../middleware/landlordAuth');
@@ -13,7 +13,7 @@ require('express-async-errors');
 
 // Function get single tenants renting records
 const getTenant = async (rec_id) => {
-    return await TenantsRec.findAll({
+    return await TenantsProps.findAll({
         where: {
             id: rec_id
         }
@@ -40,13 +40,13 @@ router.get('/single/:page', [auth, admin, landlords, tenants], async (req, res) 
     let offset;
     let pageNumber = req.params.page;
 
-    const data = await TenantsRec.findAndCountAll();
+    const data = await TenantsProps.findAndCountAll();
     let page = req.params.page ? parseInt(req.params.page) : 1;      // page number
     page <= 0 ? page = 1 : page = parseInt(req.params.page);
     let pages = Math.ceil(data.count / limit);
     offset = limit * (page - 1);
 
-    let records = await TenantsRec.findAll({
+    const records = await TenantsProps.findAll({
         order: [
             ['move_in_date', 'DESC']
         ],
@@ -79,7 +79,7 @@ router.post('/register', [auth, admin], async (req, res) => {
     let moveOutDate = req.body.move_out_date;
     let phone = req.body.phone;
 
-    const userData = await TenantsRec .create({
+    const userData = await TenantsProps .create({
         tenant_id: tenantID,
         property_id: propertyId,
         property_name: propertyName,
@@ -101,7 +101,7 @@ router.post('/edit', [auth, admin], async (req, res) => {
     let editedBy = req.user.id;
     let recID = req.body.id;
 
-    const userData = await TenantsRec.findOne({
+    const userData = await TenantsProps.findOne({
         where: {
             id: recID
         }
@@ -119,7 +119,7 @@ router.post('/edit', [auth, admin], async (req, res) => {
     let moveOutDate = userData.move_out_date;
     let phone = userData.phone;
 
-    const newData = await TenantsRec.update({
+    const newData = await TenantsProps.update({
             tenant_id: req.body.tenant_id || tenantID,
             property_id: req.body.property_id || propertyId,
             property_name: req.body.propertyName || propertyName,

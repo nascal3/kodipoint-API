@@ -3,7 +3,7 @@ const connection= require('../startup/db');
 const tenantModel = require('./tenantModel');
 const propertyModel = require('./propertyModel');
 
-const tenantRecModel = connection.define('tenant_record', {
+const tenantPropsModel = connection.define('tenant_property', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -64,9 +64,9 @@ const tenantRecModel = connection.define('tenant_record', {
 },{
     indexes:[
         {
-            fields:["tenant_id", "property_id", "landlord_id", "property_name"]
+            fields:["tenant_id", "property_id", "landlord_id"]
         }
     ]
 });
 
-module.exports = tenantRecModel;
+module.exports = tenantPropsModel;
