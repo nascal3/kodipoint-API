@@ -11,8 +11,8 @@ const tenants = require('../middleware/tenantAuth');
 
 require('express-async-errors');
 
-// Function get single tenants renting records
-const getTenant = async (rec_id) => {
+// Function get single renting records of a tenant
+const getSingleTenantRec = async (rec_id) => {
     return await TenantsProps.findAll({
         where: {
             id: rec_id
@@ -57,8 +57,8 @@ router.get('/single', [auth, admin, landlords, tenants], async (req, res) => {
     res.status(200).json({'result': records});
 });
 
-// REGISTER TENANTS MOVED IN TO PROPERTY
-router.post('/register', [auth, admin], async (req, res) => {
+// REGISTER TENANTS TO MOVED IN PROPERTY (add tenant to a newly rented property)
+router.post('/movein', [auth, admin], async (req, res) => {
 
     const userData = await TenantsProps .create({
         tenant_id: req.body.tenant_id,
@@ -67,7 +67,6 @@ router.post('/register', [auth, admin], async (req, res) => {
         unit_rent: req.body.unit_rent,
         landlord_id: req.body.landlord_id,
         move_in_date: req.body.move_in_date,
-        move_out_date: req.body.move_out_date,
         phone: req.body.phone,
         created_by: req.user.id
     });
@@ -83,7 +82,8 @@ router.post('/edit', [auth, admin], async (req, res) => {
 
     const userData = await TenantsProps.findOne({
         where: {
-            id: dbRecID
+            id: dbRecID,
+            tenant_id: res.body.tenant_id
         }
     });
 
@@ -111,12 +111,13 @@ router.post('/edit', [auth, admin], async (req, res) => {
     },
         {
             where: {
-                id: dbRecID
+              id: dbRecID,
+              tenant_id: res.body.tenant_id
             }
         }
     );
 
-   const changedData = await getTenant(dbRecID);
+   const changedData = await getSingleTenantRec(dbRecID);
 
     res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
