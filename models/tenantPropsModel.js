@@ -25,10 +25,6 @@ const tenantPropsModel = connection.define('tenant_property', {
         },
         allowNull: false
     },
-    property_name: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
     unit_no: {
         type: Sequelize.STRING,
         allowNull: false

@@ -63,7 +63,6 @@ router.post('/register', [auth, admin], async (req, res) => {
     const userData = await TenantsProps .create({
         tenant_id: req.body.tenant_id,
         property_id: req.body.property_id,
-        property_name: req.body.property_name,
         unit_no: req.body.unit_no,
         unit_rent: req.body.unit_rent,
         landlord_id: req.body.landlord_id,
@@ -79,8 +78,8 @@ router.post('/register', [auth, admin], async (req, res) => {
 // EDIT TENANTS RENTING DETAILS
 router.post('/edit', [auth, admin], async (req, res) => {
 
-    let editedBy = req.user.id;
-    let recID = req.body.id;
+    const editedBy = req.user.id;
+    const recID = req.body.id;
 
     const userData = await TenantsProps.findOne({
         where: {
@@ -90,20 +89,18 @@ router.post('/edit', [auth, admin], async (req, res) => {
 
     if (!userData) return res.status(500).json({'Error': 'Records not found'});
 
-    let tenantID = userData.tenant_id;
-    let propertyId = userData.property_id;
-    let propertyName = userData.propertyName;
-    let unitNo = userData.unit_no;
-    let unitRent = userData.unit_rent;
-    let landlordID = userData.landlord_id;
-    let moveInDate = userData.move_in_date;
-    let moveOutDate = userData.move_out_date;
-    let phone = userData.phone;
+    const tenantID = userData.tenant_id;
+    const propertyId = userData.property_id;
+    const unitNo = userData.unit_no;
+    const unitRent = userData.unit_rent;
+    const landlordID = userData.landlord_id;
+    const moveInDate = userData.move_in_date;
+    const moveOutDate = userData.move_out_date;
+    const phone = userData.phone;
 
     const newData = await TenantsProps.update({
             tenant_id: req.body.tenant_id || tenantID,
             property_id: req.body.property_id || propertyId,
-            property_name: req.body.propertyName || propertyName,
             unit_no: req.body.unit_no || unitNo,
             unit_rent: req.body.unit_rent || unitRent,
             landlord_id: req.body.landlord_id || landlordID,
