@@ -20,8 +20,8 @@ const getTenant = async (rec_id) => {
     });
 };
 
-// GET ONE TENANT ALL RENTING INFO BY TENANT ID & DATE MOVED IN.
-router.get('/single/:page', [auth, admin, landlords, tenants], async (req, res) => {
+// GET SINGLE TENANT ALL RENTING INFO BY TENANT ID & DATE MOVED IN.
+router.get('/single', [auth, admin, landlords, tenants], async (req, res) => {
 
     let to_date =req.body.to_date;
     let from_date = req.body.from_date;
@@ -79,11 +79,11 @@ router.post('/register', [auth, admin], async (req, res) => {
 router.post('/edit', [auth, admin], async (req, res) => {
 
     const editedBy = req.user.id;
-    const recID = req.body.id;
+    const dbRecID = req.body.db_id;
 
     const userData = await TenantsProps.findOne({
         where: {
-            id: recID
+            id: dbRecID
         }
     });
 
@@ -111,12 +111,12 @@ router.post('/edit', [auth, admin], async (req, res) => {
     },
         {
             where: {
-                id: recID
+                id: dbRecID
             }
         }
     );
 
-   const changedData = await getTenant(recID);
+   const changedData = await getTenant(dbRecID);
 
     res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
