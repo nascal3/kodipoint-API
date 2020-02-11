@@ -25,7 +25,7 @@ const mapTenantID = async (user_id) => {
     return results ? results.dataValues.id : 0
 };
 
-// **Function get single tenants records**
+// ***Function get single tenants records***
 const getTenant = async (tenant_id) => {
     return await Tenants.findAll({
         where: {
