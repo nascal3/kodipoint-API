@@ -29,15 +29,15 @@ const mapLandlordID = async (user_id) => {
         where: {
             user_id: user_id
         }
-    })
-    return results ? results.dataValues.landlord_id : 0
+    });
+    return results ? results.dataValues.landlord_id : 0;
 };
 
 // GET ONE PROPERTY BY ID.
 router.get('/single', [auth, admin], async (req, res) => {
     const propData = await getProperty(req.body.id);
     res.status(200).json({ 'results': propData});
-})
+});
 
 // SEARCH ALL PROPERTY .
 router.post('/search', [auth, landlord], async (req, res) => {
@@ -51,7 +51,7 @@ router.post('/search', [auth, landlord], async (req, res) => {
     }
   });
   res.status(200).json({ 'results': searchResults});
-})
+});
 
 // SEARCH PROPERTY FOR SINGLE LANDLORD BY USER_ID.
 router.post('/landlord/search', [auth, landlord], async (req, res) => {
@@ -105,7 +105,7 @@ router.get('/all', [auth, admin], async (req, res) => {
 // REGISTER PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
   const prop = JSON.parse(req.body.json);
-  let uploadPath = ''
+  let uploadPath = '';
   if (req.files) uploadPath = uploadImage(req.files, prop, 'property');
 
   const landlord_id = await mapLandlordID(prop.user_id);

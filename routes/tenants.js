@@ -38,7 +38,7 @@ const getTenant = async (tenant_id) => {
 router.get('/single', [auth, tenant], async (req, res) => {
     const userData = await getTenant(req.body.tenant_id);
     res.status(200).json({ 'results': userData});
-})
+});
 
 // GET ALL TENANTS LIST .
 router.get('/all', [auth, admin], async (req, res) => {

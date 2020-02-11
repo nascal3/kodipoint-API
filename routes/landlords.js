@@ -13,8 +13,8 @@ const landlord = require('../middleware/landlordAuth');
 const newUser = require('./users');
 const editUser = require('./users');
 
-const uploadImage = require('../helper/uploadFiles')
-const deleteFile = require('../helper/deleteUploadedFiles')
+const uploadImage = require('../helper/uploadFiles');
+const deleteFile = require('../helper/deleteUploadedFiles');
 require('express-async-errors');
 
 // ***Function get single landlord data using user_ID***
@@ -61,12 +61,12 @@ router.get('/all', [auth, admin], async (req, res) => {
     const limit= req.body.limit;   // number of records per page
     const offset = req.body.offset;
 
-    const users = await Landlords.findAll({
+    const landlords = await Landlords.findAll({
         limit: limit,
         offset: offset
     });
 
-    res.status(200).json({'result': users});
+    res.status(200).json({'result': landlords});
 });
 
 //***Function look for duplicates of KRA Pin or national ID***
@@ -80,7 +80,7 @@ const duplicates = async (info) => {
         }
     });
     return Object.keys(landlordsResults).length
-}
+};
 
 //***Function look for duplicates of KRA Pin or national ID with current
 // user ID exception***
@@ -99,13 +99,13 @@ const duplicatesExcept = async (info) => {
         }
     });
     return Object.keys(landlordsResults).length
-}
+};
 
 // REGISTER LANDLORDS PERSONAL DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
     const info = JSON.parse(req.body.json);
-    const numberDuplicates = await duplicates(info)
+    const numberDuplicates = await duplicates(info);
     if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
 
     const params = {
@@ -118,7 +118,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
     const createdUser = await newUser.createNewUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
-    let uploadPath = ''
+    let uploadPath = '';
     if (req.files) uploadPath = uploadImage(req.files, info, 'user');
 
     const userData = await Landlords.create({
