@@ -23,28 +23,21 @@ const getTenant = async (rec_id) => {
 // GET ONE TENANT ALL RENTING INFO BY TENANT ID & DATE MOVED IN.
 router.get('/single/:page', [auth, admin, landlords, tenants], async (req, res) => {
 
-    let toDate =req.body.toDate;
-    let fromDate = req.body.fromDate;
+    let to_date =req.body.to_date;
+    let from_date = req.body.from_date;
     const tenant_id = req.body.tenant_id;
 
-    if (toDate === null || toDate === undefined) {
-        toDate = new Date();
+    if (!to_date) {
+        to_date = new Date();
     }
 
-    if (fromDate === null || fromDate === undefined) {
-        let currentDate = new Date();
-        fromDate = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
+    if (!from_date) {
+        const currentDate = new Date();
+        from_date = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
     }
 
-    let limit = 50;   // number of records per page
-    let offset;
-    let pageNumber = req.params.page;
-
-    const data = await TenantsProps.findAndCountAll();
-    let page = req.params.page ? parseInt(req.params.page) : 1;      // page number
-    page <= 0 ? page = 1 : page = parseInt(req.params.page);
-    let pages = Math.ceil(data.count / limit);
-    offset = limit * (page - 1);
+    const limit= req.body.limit; // number of records per page
+    const offset = req.body.offset;
 
     const records = await TenantsProps.findAll({
         order: [
@@ -53,43 +46,31 @@ router.get('/single/:page', [auth, admin, landlords, tenants], async (req, res) 
         where: {
             tenant_id: tenant_id,
             move_in_date: {
-                [Op.gte]: fromDate,
-                [Op.lte]: toDate
+                [Op.gte]: from_date,
+                [Op.lte]: to_date
             }
         },
         limit: limit,
         offset: offset
     });
 
-    res.status(200).json({'result': records, 'currentPage': pageNumber, 'pages': pages});
+    res.status(200).json({'result': records});
 });
 
 // REGISTER TENANTS MOVED IN TO PROPERTY
 router.post('/register', [auth, admin], async (req, res) => {
 
-    let createdBy = req.user.id;
-
-    let tenantID = req.body.tenant_id;
-    let propertyId = req.body.property_id;
-    let propertyName = req.body.property_name;
-    let unitNo = req.body.unit_no;
-    let unitRent = req.body.unit_rent;
-    let landlordID = req.body.landlord_id;
-    let moveInDate = req.body.move_in_date;
-    let moveOutDate = req.body.move_out_date;
-    let phone = req.body.phone;
-
     const userData = await TenantsProps .create({
-        tenant_id: tenantID,
-        property_id: propertyId,
-        property_name: propertyName,
-        unit_no: unitNo,
-        unit_rent: unitRent,
-        landlord_id: landlordID,
-        move_in_date: moveInDate,
-        move_out_date: moveOutDate,
-        phone: phone,
-        created_by: createdBy
+        tenant_id: req.body.tenant_id,
+        property_id: req.body.property_id,
+        property_name: req.body.property_name,
+        unit_no: req.body.unit_no,
+        unit_rent: req.body.unit_rent,
+        landlord_id: req.body.landlord_id,
+        move_in_date: req.body.move_in_date,
+        move_out_date: req.body.move_out_date,
+        phone: req.body.phone,
+        created_by: req.user.id
     });
 
     res.status(200).json({'result': userData});
