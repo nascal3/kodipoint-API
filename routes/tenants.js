@@ -9,18 +9,28 @@ const landlord = require('../middleware/landlordAuth');
 
 require('express-async-errors');
 
-// Function get single tenants records
-const getTenant = async (user_id) => {
-    return await Tenants.findAll({
+// ***Function get/match user ID to tenant_ID***
+const mapTenantID = async (user_id) => {
+    const results = await Tenants.findOne({
         where: {
             user_id: user_id
+        }
+    })
+    return results ? results.dataValues.id : 0
+};
+
+// **Function get single tenants records**
+const getTenant = async (tenant_id) => {
+    return await Tenants.findAll({
+        where: {
+            id: tenant_id
         }
     });
 };
 
 // GET ONE TENANT BY ID.
 router.get('/single', [auth, tenant], async (req, res) => {
-    const userData = await getTenant(req.body.id);
+    const userData = await getTenant(req.body.tenant_id);
     res.status(200).json({ 'results': userData});
 })
 
@@ -81,15 +91,16 @@ router.post('/register', [auth, tenant], async (req, res) => {
 // EDIT TENANTS PERSONAL DETAILS
 router.post('/profile/edit', [auth, tenant], async (req, res) => {
 
-    let userID = req.body.id || req.user.id;
+    const tenant_id = await mapTenantID(req.user.id)
+    const tenantID = req.body.tenant_id || tenant_id;
 
     const userData = await Tenants.findOne({
         where: {
-            user_id: userID
+            id: tenantID
         }
     });
 
-    if (!userData) return res.status(500).json({'Error': 'User not found'});
+    if (!userData) return res.status(500).json({'Error': 'Tenant not found'});
 
     let name = userData.name;
     let email = userData.email;
@@ -106,12 +117,12 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
     },
         {
             where: {
-                user_id: userID
+                id: tenantID
             }
         }
     );
 
-   const changedData = await getTenant(userID);
+   const changedData = await getTenant(tenantID);
 
     res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
