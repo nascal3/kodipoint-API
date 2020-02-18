@@ -25,7 +25,7 @@ const mapTenantID = async (user_id) => {
     return results ? results.dataValues.id : 0
 };
 
-// ***Function get single tenants records***
+// ***Function get single tenant records***
 const getTenant = async (tenant_id) => {
     return await Tenants.findAll({
         where: {
@@ -34,34 +34,30 @@ const getTenant = async (tenant_id) => {
     });
 };
 
-// GET ONE TENANT BY ID.
-router.get('/single', [auth, tenant], async (req, res) => {
-    const userData = await getTenant(req.body.tenant_id);
-    res.status(200).json({ 'results': userData});
-});
-
-// GET ALL TENANTS LIST .
-router.get('/all', [auth, admin], async (req, res) => {
-    const limit= req.body.limit;   // number of records per page
-    const offset = req.body.offset;
-
-    const tenants = await Tenants.findAll({
-        limit: limit,
-        offset: offset
+// ***Function search single tenant records***
+const searchTenant = async (searchPhrase) => {
+    return await Tenants.findAll({
+        where: {
+            [Op.or]: [
+                {
+                    name: {
+                        [Op.like]: `%${searchPhrase}%`
+                    }
+                },
+                {
+                    national_id: {
+                        [Op.like]: `%${searchPhrase}%`
+                    }
+                }
+            ]
+        },
+        raw: true
     });
+};
 
-    res.status(200).json({'result':tenants});
-});
-
-// GET ALL TENANTS FOR SPECIFIC LANDLORD .
-router.get('/landlord', [auth, landlord], async (req, res) => {
-    const limit= req.body.limit;
-    const offset = req.body.offset;
-
-    const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
-    const landlordID = await propertyFunctions.mapLandlordID(userID); // get user ID from token in header or request body
-
-    // get all property IDs belonging to selected landlords
+// ***Function get all tenants of a specific landlord ***
+const getLandlordTenants = async (landlordID) => {
+    // get all property IDs belonging to selected landlord
     const propertyIDs = await Properties.findAll({
         attributes: ['id'],
         where: {
@@ -77,7 +73,7 @@ router.get('/landlord', [auth, landlord], async (req, res) => {
     // get all tenant IDs still living in selected landlords' properties
     const tenantsIDs = await TenantsProps.findAll({
         attributes: [
-          [sequelize.fn('DISTINCT', sequelize.col('tenant_id')), 'tenant_id']
+            [sequelize.fn('DISTINCT', sequelize.col('tenant_id')), 'tenant_id']
         ],
         where: {
             property_id: propertyIdArray,
@@ -92,6 +88,46 @@ router.get('/landlord', [auth, landlord], async (req, res) => {
         tenantsIDsArray.push(value.tenant_id)
     });
 
+    return tenantsIDsArray
+};
+
+// GET ONE TENANT BY ID
+router.get('/single', [auth, tenant], async (req, res) => {
+    const userData = await getTenant(req.body.tenant_id);
+    res.status(200).json({ 'results': userData});
+});
+
+// GET ALL TENANTS LIST
+router.get('/all', [auth, admin], async (req, res) => {
+    const limit= req.body.limit;   // number of records per page
+    const offset = req.body.offset;
+
+    const tenants = await Tenants.findAll({
+        limit: limit,
+        offset: offset
+    });
+
+    res.status(200).json({'result':tenants});
+});
+
+// SEARCH FOR A TENANT
+router.get('/search', [auth, landlord], async (req, res) => {
+    const searchPhrase = req.body.search_phrase;
+    const searchResults  = await searchTenant(searchPhrase)
+    res.status(200).json({ 'results': searchResults});
+});
+
+// GET ALL TENANTS FOR SPECIFIC LANDLORD
+router.get('/landlord', [auth, landlord], async (req, res) => {
+    const limit= req.body.limit;
+    const offset = req.body.offset;
+
+    const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
+    const landlordID = await propertyFunctions.mapLandlordID(userID); // get user ID from token in header or request body
+
+    // get all tenant IDs still living in selected landlords' properties
+    const tenantsIDsArray = await getLandlordTenants(landlordID)
+
     const tenants = await Tenants.findAll({
         where: {
             id: tenantsIDsArray
@@ -101,6 +137,38 @@ router.get('/landlord', [auth, landlord], async (req, res) => {
     });
 
     res.status(200).json({'result': tenants});
+});
+
+// SEARCH ALL TENANTS FOR SPECIFIC LANDLORD
+router.get('/landlord/search', [auth, landlord], async (req, res) => {
+    const searchPhrase = req.body.search_phrase;
+
+    const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
+    const landlordID = await propertyFunctions.mapLandlordID(userID); // get user ID from token in header or request body
+
+    // get all tenant IDs still living in selected landlords' properties
+    const tenantsIDsArray = await getLandlordTenants(landlordID)
+
+    const tenants = await Tenants.findAll({
+        where: {
+            id: tenantsIDsArray,
+            [Op.or]: [
+                {
+                    name: {
+                        [Op.like]: `%${searchPhrase}%`
+                    }
+                },
+                {
+                    national_id: {
+                        [Op.like]: `%${searchPhrase}%`
+                    }
+                }
+            ]
+        }
+    });
+
+    res.status(200).json({'result': tenants});
+
 });
 
 // REGISTER TENANTS PERSONAL DETAILS
