@@ -168,7 +168,6 @@ router.get('/landlord/search', [auth, landlord], async (req, res) => {
     });
 
     res.status(200).json({'result': tenants});
-
 });
 
 // REGISTER TENANTS PERSONAL DETAILS
