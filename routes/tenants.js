@@ -111,7 +111,7 @@ router.get('/all', [auth, admin], async (req, res) => {
 });
 
 // SEARCH FOR A TENANT
-router.get('/search', [auth, landlord], async (req, res) => {
+router.post('/search', [auth, admin], async (req, res) => {
     const searchPhrase = req.body.search_phrase;
     const searchResults  = await searchTenant(searchPhrase)
     res.status(200).json({ 'results': searchResults});
