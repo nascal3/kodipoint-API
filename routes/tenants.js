@@ -175,8 +175,8 @@ router.get('/landlord/search', [auth, landlord], async (req, res) => {
     res.status(200).json({'result': tenants});
 });
 
-//***Function look for duplicates of KRA Pin or national ID***
- const duplicates = async (info) => {
+//***Function look for duplicates of national ID***
+ const duplicateID = async (info) => {
     const tenantsResults  = await Tenants.findAll({
         where: {
             national_id: info.national_id
@@ -189,7 +189,7 @@ router.get('/landlord/search', [auth, landlord], async (req, res) => {
 router.post('/register', [auth, tenant], async (req, res) => {
 
     const info = JSON.parse(req.body.json);
-    const numberDuplicates = await duplicates(info);
+    const numberDuplicates = await duplicateID(info);
     if (numberDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
 
     const params = {
@@ -222,40 +222,63 @@ router.post('/register', [auth, tenant], async (req, res) => {
 // EDIT TENANTS PERSONAL DETAILS
 router.post('/profile/edit', [auth, tenant], async (req, res) => {
 
-    const tenant_id = await mapTenantID(req.user.id)
-    const tenantID = req.body.tenant_id || tenant_id;
+    const info = JSON.parse(req.body.json);
+    // const userID = req.user.role === 'tenant' ? info.user_id : req.user.id;
+
+    // const tenant_id = await mapTenantID(req.user.id)
+    // const tenantID = req.body.tenant_id || tenant_id;
+
 
     const userData = await Tenants.findOne({
         where: {
-            id: tenantID
+            user_id: info.user_id
         }
     });
 
-    if (!userData) return res.status(500).json({'Error': 'Tenant not found'});
+    if (!userData) return res.status(404).json({'Error': 'Tenant not found'});
 
-    let name = userData.name;
-    let email = userData.email;
-    let nationalID = userData.national_id;
-    let phone = userData.phone;
-    let avatar = userData.avatar;
+    const numberIdDuplicates = await duplicateID(info)
+    if (numberIdDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
+
+    const params = {
+        'id': info.user_id,
+        'username':info.email,
+        'name':info.name
+    };
+
+    const editedUser = await editUser.editUser(params)
+    if (!editedUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
+
+    const name = userData.name;
+    const email = userData.email;
+    const nationalID = userData.national_id;
+    const phone = userData.phone;
+    const avatar = userData.avatar;
+
+    let uploadPath = '';
+    if (req.files) {
+        deleteFile(`.${avatar}`);
+        uploadPath = uploadImage(req.files, info, 'user');
+    }
 
     const newData = await Tenants.update({
-        name: req.body.name || name,
-        email: req.body.email || email,
-        national_id: req.body.national_id || nationalID,
-        phone: req.body.phone || phone,
-        avatar: req.body.avatar || avatar
+        name: info.name || name,
+        email: info.email || email,
+        national_id: info.national_id || nationalID,
+        phone: info.phone || phone,
+        avatar: uploadPath || avatar,
+        updatedBy:  req.user.id
     },
         {
             where: {
-                id: tenantID
+                user_id: info.user_id
             }
         }
     );
 
-   const changedData = await getTenant(tenantID);
+   const changedData = await getTenant(info.user_id);
 
-    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
 module.exports = router;

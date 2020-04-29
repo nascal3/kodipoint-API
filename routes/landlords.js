@@ -178,7 +178,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
     const bank_currency = userData.bank_currency;
     const avatar = userData.avatar;
 
-    let uploadPath = ''
+    let uploadPath = '';
     if (req.files) {
         deleteFile(`.${avatar}`);
         uploadPath = uploadImage(req.files, info, 'user');
@@ -205,7 +205,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
    const changedData = await getLandlord(userID);
 
-    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
 
