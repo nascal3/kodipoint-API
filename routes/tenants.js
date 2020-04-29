@@ -12,6 +12,8 @@ const tenant = require('../middleware/tenantAuth');
 const landlord = require('../middleware/landlordAuth');
 
 const propertyFunctions = require('./properties');
+const uploadImage = require('../helper/uploadFiles');
+const deleteFile = require('../helper/deleteUploadedFiles');
 
 require('express-async-errors');
 
@@ -173,20 +175,20 @@ router.get('/landlord/search', [auth, landlord], async (req, res) => {
 // REGISTER TENANTS PERSONAL DETAILS
 router.post('/register', [auth, tenant], async (req, res) => {
 
-    let userID = req.body.user_id || req.user.id;
-    let name = req.body.name;
-    let email = req.user.email;
-    let nationalID = req.body.national_id;
-    let phone = req.body.phone;
-    let avatar = req.body.avatar;
+    const info = JSON.parse(req.body.json);
+
+    let userID = info.user_id || req.user.id;
+
+    let uploadPath = '';
+    if (req.files) uploadPath = uploadImage(req.files, info, 'user');
 
     const userData = await Tenants.create({
         user_id: userID,
-        name: name,
-        email: email,
-        national_id: nationalID,
-        phone: phone,
-        avatar: avatar
+        name: info.name,
+        email: info.name,
+        national_id: info.nationalID,
+        phone: info.phone,
+        avatar: uploadPath
     });
 
     res.status(200).json({'result': userData});
