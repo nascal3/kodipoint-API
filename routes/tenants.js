@@ -11,6 +11,9 @@ const admin = require('../middleware/adminAuth');
 const tenant = require('../middleware/tenantAuth');
 const landlord = require('../middleware/landlordAuth');
 
+const newUser = require('./users');
+const editUser = require('./users');
+
 const propertyFunctions = require('./properties');
 const uploadImage = require('../helper/uploadFiles');
 const deleteFile = require('../helper/deleteUploadedFiles');
@@ -172,22 +175,44 @@ router.get('/landlord/search', [auth, landlord], async (req, res) => {
     res.status(200).json({'result': tenants});
 });
 
+//***Function look for duplicates of KRA Pin or national ID***
+ const duplicates = async (info) => {
+    const tenantsResults  = await Tenants.findAll({
+        where: {
+            national_id: info.national_id
+        }
+    });
+    return Object.keys(tenantsResults).length
+};
+
 // REGISTER TENANTS PERSONAL DETAILS
 router.post('/register', [auth, tenant], async (req, res) => {
 
     const info = JSON.parse(req.body.json);
+    const numberDuplicates = await duplicates(info);
+    if (numberDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
 
-    let userID = info.user_id || req.user.id;
+    const params = {
+        'username':info.email,
+        'password':'123456',
+        'name':info.name,
+        'role': 'tenant'
+    };
+
+    const createdUser = await newUser.createNewUser(params);
+    if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
+
 
     let uploadPath = '';
     if (req.files) uploadPath = uploadImage(req.files, info, 'user');
 
     const userData = await Tenants.create({
-        user_id: userID,
+        user_id: createdUser.data.dataValues.id,
         name: info.name,
-        email: info.name,
-        national_id: info.nationalID,
+        email: info.email,
+        national_id: info.national_id,
         phone: info.phone,
+        updatedBy: req.user.id,
         avatar: uploadPath
     });
 
