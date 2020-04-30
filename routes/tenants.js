@@ -179,7 +179,14 @@ router.get('/landlord/search', [auth, landlord], async (req, res) => {
  const duplicateID = async (info) => {
     const tenantsResults  = await Tenants.findAll({
         where: {
-            national_id: info.national_id
+            [Op.or]: [
+                { national_id: info.national_id }
+            ],
+            [Op.and]: {
+                user_id: {
+                    [Op.ne]: info.user_id
+                }
+            }
         }
     });
     return Object.keys(tenantsResults).length
