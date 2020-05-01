@@ -70,7 +70,7 @@ router.post('/landlord/search', [auth, landlord], async (req, res) => {
   res.status(200).json({ 'results': searchResults});
 })
 
-// GET ALL PROPERTIES FOR SPECIFIC LANDLORD LIST .
+// GET ALL PROPERTIES FOR SPECIFIC LANDLORD .
 router.post('/landlord', [auth, landlord], async (req, res) => {
   const limit= req.body.limit;   // number of records per page
   const offset = req.body.offset;

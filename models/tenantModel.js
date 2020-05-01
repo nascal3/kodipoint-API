@@ -35,6 +35,14 @@ const tenantModel = connection.define('tenant', {
     avatar: {
         type:Sequelize.STRING,
         allowNull: true
+    },
+    updatedBy: {
+        type:Sequelize.INTEGER,
+        references: {
+            model: userModel,
+            key: userModel.id
+        },
+        allowNull: false
     }
 },{
     indexes:[

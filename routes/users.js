@@ -27,7 +27,7 @@ router.get('/all', [auth, admin], async (req, res) => {
 });
 
 // GET ONE USER BY ID.
-router.get('/user/:id', [auth, admin], async (req, res) => {
+router.get('/user/:id', [auth], async (req, res) => {
     const user = await Users.findOne({
         where: {
             id: req.params.id

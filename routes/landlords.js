@@ -26,14 +26,14 @@ const getLandlord = async (user_id) => {
     });
 };
 
-// GET ONE LANDLORD BY ID.
+// GET ONE LANDLORD BY ID
 router.get('/single', [auth, landlord], async (req, res) => {
     const ID = req.body.id || req.user.id;
     const userData = await getLandlord(ID);
     res.status(200).json({ 'results': userData});
 });
 
-// SEARCH ALL LANDLORDS.
+// SEARCH FOR A LANDLORD
 router.post('/search', [auth, landlord], async (req, res) => {
     const searchPhrase = req.body.search_phrase;
 
@@ -56,7 +56,7 @@ router.post('/search', [auth, landlord], async (req, res) => {
     res.status(200).json({ 'results': searchResults});
 });
 
-// GET ALL LANDLORDS LIST .
+// GET ALL LANDLORDS LIST
 router.get('/all', [auth, admin], async (req, res) => {
     const limit= req.body.limit;   // number of records per page
     const offset = req.body.offset;
@@ -178,7 +178,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
     const bank_currency = userData.bank_currency;
     const avatar = userData.avatar;
 
-    let uploadPath = ''
+    let uploadPath = '';
     if (req.files) {
         deleteFile(`.${avatar}`);
         uploadPath = uploadImage(req.files, info, 'user');
@@ -205,7 +205,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
    const changedData = await getLandlord(userID);
 
-    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
 
