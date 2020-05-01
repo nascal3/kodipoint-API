@@ -119,7 +119,7 @@ router.get('/all', [auth, admin], async (req, res) => {
 router.post('/search', [auth, admin], async (req, res) => {
     const searchPhrase = req.body.search_phrase;
     const searchResults  = await searchTenant(searchPhrase)
-    res.status(200).json({ 'results': searchResults});
+    res.status(200).json({ 'result': searchResults});
 });
 
 // GET ALL TENANTS FOR SPECIFIC LANDLORD
@@ -127,7 +127,7 @@ router.get('/landlord', [auth, landlord], async (req, res) => {
     const limit= req.body.limit;
     const offset = req.body.offset;
 
-    const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
+    const userID = req.user.role === 'admin' ?  0 : req.user.id;
     const landlordID = await propertyFunctions.mapLandlordID(userID); // get user ID from token in header or request body
 
     // get all tenant IDs still living in selected landlords' properties
@@ -145,10 +145,10 @@ router.get('/landlord', [auth, landlord], async (req, res) => {
 });
 
 // SEARCH ALL TENANTS FOR SPECIFIC LANDLORD
-router.get('/landlord/search', [auth, landlord], async (req, res) => {
+router.post('/landlord/search', [auth, landlord], async (req, res) => {
     const searchPhrase = req.body.search_phrase;
 
-    const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
+    const userID = req.user.role === 'admin' ? 0 : req.user.id;
     const landlordID = await propertyFunctions.mapLandlordID(userID); // get user ID from token in header or request body
 
     // get all tenant IDs still living in selected landlords' properties
