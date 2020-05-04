@@ -9,7 +9,6 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
-
 const newUser = require('./users');
 const editUser = require('./users');
 
@@ -22,6 +21,15 @@ const getLandlord = async (user_id) => {
     return await Landlords.findOne({
         where: {
             user_id: user_id
+        }
+    });
+};
+
+// ***Function get single landlord data using landlord_ID***
+const getLandlordByID = async (landlord_id) => {
+    return await Landlords.findOne({
+        where: {
+           landlord_id: landlord_id
         }
     });
 };
@@ -133,8 +141,8 @@ router.post('/register', [auth, landlord], async (req, res) => {
         bank_acc: info.bank_acc,
         bank_swift: info.bank_swift,
         bank_currency: info.bank_currency,
+        avatar: uploadPath,
         updatedBy: req.user.id,
-        avatar: uploadPath
     });
 
     res.status(200).json({'result': userData});
@@ -206,6 +214,25 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
    const changedData = await getLandlord(userID);
 
    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+});
+
+// APPROVE LANDLORD
+router.post('/profile/approve', [auth, landlord], async (req, res) => {
+
+    const landlordID = req.body.landlord_id
+
+    const newData = await Landlords.update({
+        approved: req.body.approval,
+        updatedBy:  req.user.id
+    },{
+        where: {
+            landlord_id: landlordID
+        }
+    });
+
+    const changedData = await getLandlordByID(landlordID);
+
+    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
 

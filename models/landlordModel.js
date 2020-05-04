@@ -65,6 +65,11 @@ const landlordModel = connection.define('landlord', {
         type:Sequelize.STRING,
         allowNull: true
     },
+    approved: {
+        type:Sequelize.BOOLEAN,
+        defaultValue: 0,
+        allowNull: false
+    },
     updatedBy: {
         type:Sequelize.INTEGER,
         references: {
