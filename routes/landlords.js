@@ -217,7 +217,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 });
 
 // APPROVE LANDLORD
-router.post('/profile/approve', [auth, landlord], async (req, res) => {
+router.post('/profile/approve', [auth, admin], async (req, res) => {
 
     const landlordID = req.body.landlord_id
 
