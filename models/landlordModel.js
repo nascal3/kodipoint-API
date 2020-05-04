@@ -29,12 +29,12 @@ const landlordModel = connection.define('landlord', {
     national_id: {
         type: Sequelize.STRING,
         unique: true,
-        allowNull: false
+        allowNull: true
     },
     kra_pin: {
         type: Sequelize.STRING,
         unique: true,
-        allowNull: false
+        allowNull: true
     },
     phone: {
         type: Sequelize.STRING(30),
@@ -42,15 +42,15 @@ const landlordModel = connection.define('landlord', {
     },
     bank_name: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     bank_branch: {
         type:Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     bank_acc: {
         type:Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     bank_swift: {
         type:Sequelize.STRING,
