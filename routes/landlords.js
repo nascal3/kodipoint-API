@@ -9,7 +9,6 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
-
 const newUser = require('./users');
 const editUser = require('./users');
 
@@ -22,6 +21,15 @@ const getLandlord = async (user_id) => {
     return await Landlords.findOne({
         where: {
             user_id: user_id
+        }
+    });
+};
+
+// ***Function get single landlord data using landlord_ID***
+const getLandlordByID = async (landlord_id) => {
+    return await Landlords.findOne({
+        where: {
+           landlord_id: landlord_id
         }
     });
 };
@@ -101,6 +109,27 @@ const duplicatesExcept = async (info) => {
     return Object.keys(landlordsResults).length
 };
 
+//***Function to create new landlord details in database
+const createNewLandlord = async (newUserID, info, uploadPath, creator) => {
+    const creatorID = creator ? creator : newUserID;
+
+    return await Landlords.create({
+        user_id: newUserID,
+        name: info.name,
+        email: info.email,
+        national_id: info.national_id,
+        kra_pin: info.kra_pin,
+        phone: info.phone,
+        bank_name: info.bank_name,
+        bank_branch: info.bank_branch,
+        bank_acc: info.bank_acc,
+        bank_swift: info.bank_swift,
+        bank_currency: info.bank_currency,
+        avatar: uploadPath,
+        updatedBy: creatorID
+    });
+};
+
 // REGISTER LANDLORDS PERSONAL DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
@@ -109,7 +138,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
     if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
 
     const params = {
-        'username':info.email,
+        'email':info.email,
         'password':'123456',
         'name':info.name,
         'role':info.role
@@ -121,21 +150,10 @@ router.post('/register', [auth, landlord], async (req, res) => {
     let uploadPath = '';
     if (req.files) uploadPath = uploadImage(req.files, info, 'user');
 
-    const userData = await Landlords.create({
-        user_id: createdUser.data.dataValues.id,
-        name: info.name,
-        email: info.email,
-        national_id: info.national_id,
-        kra_pin: info.kra_pin,
-        phone: info.phone,
-        bank_name: info.bank_name,
-        bank_branch: info.bank_branch,
-        bank_acc: info.bank_acc,
-        bank_swift: info.bank_swift,
-        bank_currency: info.bank_currency,
-        updatedBy: req.user.id,
-        avatar: uploadPath
-    });
+    const newUserID = createdUser.data.dataValues.id;
+    const creatorID = req.user.id;
+
+    const userData = await createNewLandlord(newUserID, info, uploadPath, creatorID);
 
     res.status(200).json({'result': userData});
 });
@@ -208,5 +226,27 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
+// APPROVE LANDLORD
+router.post('/profile/approve', [auth, admin], async (req, res) => {
 
-module.exports = router;
+    const landlordID = req.body.landlord_id
+
+    const newData = await Landlords.update({
+        approved: req.body.approval,
+        updatedBy:  req.user.id
+    },{
+        where: {
+            landlord_id: landlordID
+        }
+    });
+
+    const changedData = await getLandlordByID(landlordID);
+
+    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+});
+
+
+module.exports = {
+    router: router,
+    createNewLandlord: createNewLandlord
+};

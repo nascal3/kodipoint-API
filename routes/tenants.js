@@ -192,6 +192,21 @@ router.post('/landlord/search', [auth, landlord], async (req, res) => {
     return Object.keys(tenantsResults).length
 };
 
+//***Function to create new tenant details in database
+const createNewTenant = async (newUserID, info, uploadPath, creator) => {
+    const creatorID = creator ? creator : newUserID;
+
+    return await Tenants.create({
+        user_id: newUserID,
+        name: info.name,
+        email: info.email,
+        national_id: info.national_id,
+        phone: info.phone,
+        avatar: uploadPath,
+        updatedBy: creatorID
+    });
+};
+
 // REGISTER TENANTS PERSONAL DETAILS
 router.post('/register', [auth, tenant], async (req, res) => {
 
@@ -200,7 +215,7 @@ router.post('/register', [auth, tenant], async (req, res) => {
     if (numberDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
 
     const params = {
-        'username':info.email,
+        'email':info.email,
         'password':'123456',
         'name':info.name,
         'role': 'tenant'
@@ -213,15 +228,10 @@ router.post('/register', [auth, tenant], async (req, res) => {
     let uploadPath = '';
     if (req.files) uploadPath = uploadImage(req.files, info, 'user');
 
-    const userData = await Tenants.create({
-        user_id: createdUser.data.dataValues.id,
-        name: info.name,
-        email: info.email,
-        national_id: info.national_id,
-        phone: info.phone,
-        updatedBy: req.user.id,
-        avatar: uploadPath
-    });
+    const newUserID = createdUser.data.dataValues.id;
+    const creatorID = req.user.id;
+
+    const userData = await createNewTenant(newUserID, info, uploadPath, creatorID);
 
     res.status(200).json({'result': userData});
 });
@@ -288,4 +298,7 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
-module.exports = router;
+module.exports = {
+    router: router,
+    createNewTenant: createNewTenant
+};
