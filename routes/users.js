@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Users = require('../models/userModel');
+const createLandlord = require('./landlords');
+const createTenant = require('./tenants');
 
 const generateToken = require('../middleware/usersTokenGen');
 const auth = require('../middleware/auth');
@@ -39,7 +41,7 @@ router.get('/user/:id', [auth], async (req, res) => {
 
 // LOGIN USERS PROCESS
 router.post('/login', async (req, res) => {
-    let username = req.body.username;
+    let username = req.body.email;
     let password = req.body.password;
 
     const userData = await Users.findOne({
@@ -74,7 +76,7 @@ router.post('/login', async (req, res) => {
 const createUser = async (user_info) => {
     const userEmail = await Users.findOne({
         where: {
-            email: user_info.username
+            email: user_info.email
         }
     });
 
@@ -85,7 +87,7 @@ const createUser = async (user_info) => {
     const salted_password = await bcrypt.hash(user_info.password, salt);
 
     const userData = await Users.create({
-        email: user_info.username,
+        email: user_info.email,
         password: salted_password,
         name: user_info.name,
         role: user_info.role
@@ -106,15 +108,23 @@ const createUser = async (user_info) => {
 router.post('/register', async (req, res) => {
 
     const params = {
-        'username':req.body.username,
+        'email':req.body.email,
         'password':req.body.password,
         'name':req.body.name,
+        'phone': req.body.phone,
         'role':req.body.role
     };
 
     const results = await createUser(params);
-
     if (!results) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
+
+    const newUserID = results.data.dataValues.id;
+    const creatorID = newUserID;
+    console.log('XXX',creatorID);
+
+    req.body.role !== 'tenant'
+        ? await createLandlord.createNewLandlord(newUserID, params, '', creatorID)
+        : await createTenant.createNewTenant(newUserID, params, '', creatorID);
 
     // set authorisation header
     return res.header('Authorization', results.token).status(200).json({'user':results.data, 'token': results.token});

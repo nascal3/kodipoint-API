@@ -109,28 +109,12 @@ const duplicatesExcept = async (info) => {
     return Object.keys(landlordsResults).length
 };
 
-// REGISTER LANDLORDS PERSONAL DETAILS
-router.post('/register', [auth, landlord], async (req, res) => {
+//***Function to create new landlord details in database
+const createNewLandlord = async (newUserID, info, uploadPath, creator) => {
+    const creatorID = creator ? creator : newUserID;
 
-    const info = JSON.parse(req.body.json);
-    const numberDuplicates = await duplicates(info);
-    if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
-
-    const params = {
-        'username':info.email,
-        'password':'123456',
-        'name':info.name,
-        'role':info.role
-    };
-
-    const createdUser = await newUser.createNewUser(params);
-    if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
-
-    let uploadPath = '';
-    if (req.files) uploadPath = uploadImage(req.files, info, 'user');
-
-    const userData = await Landlords.create({
-        user_id: createdUser.data.dataValues.id,
+    return await Landlords.create({
+        user_id: newUserID,
         name: info.name,
         email: info.email,
         national_id: info.national_id,
@@ -142,8 +126,34 @@ router.post('/register', [auth, landlord], async (req, res) => {
         bank_swift: info.bank_swift,
         bank_currency: info.bank_currency,
         avatar: uploadPath,
-        updatedBy: req.user.id,
+        updatedBy: creatorID
     });
+};
+
+// REGISTER LANDLORDS PERSONAL DETAILS
+router.post('/register', [auth, landlord], async (req, res) => {
+
+    const info = JSON.parse(req.body.json);
+    const numberDuplicates = await duplicates(info);
+    if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
+
+    const params = {
+        'email':info.email,
+        'password':'123456',
+        'name':info.name,
+        'role':info.role
+    };
+
+    const createdUser = await newUser.createNewUser(params);
+    if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
+
+    let uploadPath = '';
+    if (req.files) uploadPath = uploadImage(req.files, info, 'user');
+
+    const newUserID = createdUser.data.dataValues.id;
+    const creatorID = req.user.id;
+
+    const userData = await createNewLandlord(newUserID, info, uploadPath, creatorID);
 
     res.status(200).json({'result': userData});
 });
@@ -236,4 +246,7 @@ router.post('/profile/approve', [auth, admin], async (req, res) => {
 });
 
 
-module.exports = router;
+module.exports = {
+    router: router,
+    createNewLandlord: createNewLandlord
+};
