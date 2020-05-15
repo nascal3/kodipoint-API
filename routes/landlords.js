@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
-const newUser = require('./users');
+const createUser = require('./users');
 const editUser = require('./users');
 
 const uploadImage = require('../helper/uploadFiles');
@@ -144,7 +144,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
         'role':info.role
     };
 
-    const createdUser = await newUser.createNewUser(params);
+    const createdUser = await createUser.createNewUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     let uploadPath = '';

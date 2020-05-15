@@ -11,7 +11,7 @@ const admin = require('../middleware/adminAuth');
 const tenant = require('../middleware/tenantAuth');
 const landlord = require('../middleware/landlordAuth');
 
-const newUser = require('./users');
+const createUser = require('./users');
 const editUser = require('./users');
 
 const propertyFunctions = require('./properties');
@@ -221,7 +221,7 @@ router.post('/register', [auth, tenant], async (req, res) => {
         'role': 'tenant'
     };
 
-    const createdUser = await newUser.createNewUser(params);
+    const createdUser = await createUser.createNewUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
 

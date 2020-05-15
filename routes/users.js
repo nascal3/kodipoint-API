@@ -238,6 +238,6 @@ router.post('/reset/password', auth, async (req, res) => {
 
 module.exports = {
     router: router,
-    createNewUser: createUser,
+    createUser: createUser,
     editUser: editUser
 };
