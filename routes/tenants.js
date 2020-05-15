@@ -221,7 +221,7 @@ router.post('/register', [auth, tenant], async (req, res) => {
         'role': 'tenant'
     };
 
-    const createdUser = await createUser.createNewUser(params);
+    const createdUser = await createUser.createUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
 

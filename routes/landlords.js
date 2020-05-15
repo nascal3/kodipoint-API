@@ -144,7 +144,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
         'role':info.role
     };
 
-    const createdUser = await createUser.createNewUser(params);
+    const createdUser = await createUser.createUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     let uploadPath = '';
