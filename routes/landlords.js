@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
-const createUser = require('./users');
+const users = require('./users');
 const editUser = require('./users');
 
 const uploadImage = require('../helper/uploadFiles');
@@ -109,27 +109,6 @@ const duplicatesExcept = async (info) => {
     return Object.keys(landlordsResults).length
 };
 
-//***Function to create new landlord details in database
-const createNewLandlord = async (newUserID, info, uploadPath, creator) => {
-    const creatorID = creator ? creator : newUserID;
-
-    return await Landlords.create({
-        user_id: newUserID,
-        name: info.name,
-        email: info.email,
-        national_id: info.national_id,
-        kra_pin: info.kra_pin,
-        phone: info.phone,
-        bank_name: info.bank_name,
-        bank_branch: info.bank_branch,
-        bank_acc: info.bank_acc,
-        bank_swift: info.bank_swift,
-        bank_currency: info.bank_currency,
-        avatar: uploadPath,
-        updatedBy: creatorID
-    });
-};
-
 // REGISTER LANDLORDS PERSONAL DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
@@ -144,7 +123,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
         'role':info.role
     };
 
-    const createdUser = await createUser.createUser(params);
+    const createdUser = await users.createUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     let uploadPath = '';
@@ -153,7 +132,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
     const newUserID = createdUser.data.dataValues.id;
     const creatorID = req.user.id;
 
-    const userData = await createNewLandlord(newUserID, info, uploadPath, creatorID);
+    const userData = await users.createNewLandlord(newUserID, info, uploadPath, creatorID);
 
     res.status(200).json({'result': userData});
 });
@@ -181,7 +160,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
         'name':info.name,
         'role':info.role
     };
-    const editedUser = await editUser.editUser(params)
+    const editedUser = await users.editUser(params)
     if (!editedUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     const name = userData.name;
@@ -246,7 +225,4 @@ router.post('/profile/approve', [auth, admin], async (req, res) => {
 });
 
 
-module.exports = {
-    router: router,
-    createNewLandlord: createNewLandlord
-};
+module.exports = router;
