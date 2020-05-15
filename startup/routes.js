@@ -19,8 +19,8 @@ module.exports = (app) => {
     })
   );
   app.use('/api/users', users.router);
-  app.use('/api/landlords', landlords.router);
-  app.use('/api/tenants', tenants.router);
+  app.use('/api/landlords', landlords);
+  app.use('/api/tenants', tenants);
   app.use('/api/tenantsrec', tenantsProps);
   app.use('/api/properties', properties.router);
   app.use(express.static('public'));

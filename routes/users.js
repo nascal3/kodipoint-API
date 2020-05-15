@@ -5,7 +5,8 @@ const bcrypt = require('bcrypt');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Users = require('../models/userModel');
-const createLandlord = require('./landlords');
+const Landlords = require('../models/landlordModel');
+const Tenants = require('../models/tenantModel');
 const createTenant = require('./tenants');
 
 const generateToken = require('../middleware/usersTokenGen');
@@ -104,6 +105,42 @@ const createUser = async (user_info) => {
     return {'data': userData, 'token': token};
 };
 
+//***Function to create new landlord details in database
+const createNewLandlord = async (newUserID, info, uploadPath, creator) => {
+    const creatorID = creator ? creator : newUserID;
+
+    return await Landlords.create({
+        user_id: newUserID,
+        name: info.name,
+        email: info.email,
+        national_id: info.national_id,
+        kra_pin: info.kra_pin,
+        phone: info.phone,
+        bank_name: info.bank_name,
+        bank_branch: info.bank_branch,
+        bank_acc: info.bank_acc,
+        bank_swift: info.bank_swift,
+        bank_currency: info.bank_currency,
+        avatar: uploadPath,
+        updatedBy: creatorID
+    });
+};
+
+//***Function to create new tenant details in database
+const createNewTenant = async (newUserID, info, uploadPath, creator) => {
+    const creatorID = creator ? creator : newUserID;
+
+    return await Tenants.create({
+        user_id: newUserID,
+        name: info.name,
+        email: info.email,
+        national_id: info.national_id,
+        phone: info.phone,
+        avatar: uploadPath,
+        updatedBy: creatorID
+    });
+};
+
 // REGISTER NEW USERS PROCESS
 router.post('/register', async (req, res) => {
 
@@ -120,11 +157,10 @@ router.post('/register', async (req, res) => {
 
     const newUserID = results.data.dataValues.id;
     const creatorID = newUserID;
-    console.log('XXX',creatorID);
 
     req.body.role !== 'tenant'
-        ? await createLandlord.createNewLandlord(newUserID, params, '', creatorID)
-        : await createTenant.createNewTenant(newUserID, params, '', creatorID);
+        ? await createNewLandlord(newUserID, params, '', creatorID)
+        : await createNewTenant(newUserID, params, '', creatorID);
 
     // set authorisation header
     return res.header('Authorization', results.token).status(200).json({'user':results.data, 'token': results.token});
@@ -239,5 +275,7 @@ router.post('/reset/password', auth, async (req, res) => {
 module.exports = {
     router: router,
     createUser: createUser,
+    createNewLandlord: createNewLandlord,
+    createNewTenant: createNewTenant,
     editUser: editUser
 };

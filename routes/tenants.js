@@ -11,8 +11,7 @@ const admin = require('../middleware/adminAuth');
 const tenant = require('../middleware/tenantAuth');
 const landlord = require('../middleware/landlordAuth');
 
-const createUser = require('./users');
-const editUser = require('./users');
+const users = require('./users');
 
 const propertyFunctions = require('./properties');
 const uploadImage = require('../helper/uploadFiles');
@@ -192,21 +191,6 @@ router.post('/landlord/search', [auth, landlord], async (req, res) => {
     return Object.keys(tenantsResults).length
 };
 
-//***Function to create new tenant details in database
-const createNewTenant = async (newUserID, info, uploadPath, creator) => {
-    const creatorID = creator ? creator : newUserID;
-
-    return await Tenants.create({
-        user_id: newUserID,
-        name: info.name,
-        email: info.email,
-        national_id: info.national_id,
-        phone: info.phone,
-        avatar: uploadPath,
-        updatedBy: creatorID
-    });
-};
-
 // REGISTER TENANTS PERSONAL DETAILS
 router.post('/register', [auth, tenant], async (req, res) => {
 
@@ -221,9 +205,8 @@ router.post('/register', [auth, tenant], async (req, res) => {
         'role': 'tenant'
     };
 
-    const createdUser = await createUser.createUser(params);
+    const createdUser = await users.createUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
-
 
     let uploadPath = '';
     if (req.files) uploadPath = uploadImage(req.files, info, 'user');
@@ -231,7 +214,7 @@ router.post('/register', [auth, tenant], async (req, res) => {
     const newUserID = createdUser.data.dataValues.id;
     const creatorID = req.user.id;
 
-    const userData = await createNewTenant(newUserID, info, uploadPath, creatorID);
+    const userData = await users.createNewTenant(newUserID, info, uploadPath, creatorID);
 
     res.status(200).json({'result': userData});
 });
@@ -263,7 +246,7 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
         'name':info.name
     };
 
-    const editedUser = await editUser.editUser(params)
+    const editedUser = await users.editUser(params)
     if (!editedUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     const name = userData.name;
@@ -298,7 +281,4 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
-module.exports = {
-    router: router,
-    createNewTenant: createNewTenant
-};
+module.exports = router;
