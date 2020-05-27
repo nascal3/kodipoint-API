@@ -208,14 +208,14 @@ router.post('/register', [auth, tenant], async (req, res) => {
     const createdUser = await users.createUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
-    let uploadPath = '';
-    if (req.files) {
-        uploadPath = await uploadImage(req.files, createdUser, 'user');
-        if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
-    }
-
     const newUserID = createdUser.data.dataValues.id;
     const creatorID = req.user.id;
+
+    let uploadPath = '';
+    if (req.files) {
+        uploadPath = await uploadImage(req.files, newUserID, 'user');
+        if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
+    }
 
     const userData = await users.createNewTenant(newUserID, info, uploadPath, creatorID);
 
@@ -239,7 +239,7 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
 
     if (!userData) return res.status(404).json({'Error': 'Tenant not found'});
 
-    const numberIdDuplicates = await duplicateID(info)
+    const numberIdDuplicates = await duplicateID(info);
     if (numberIdDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
 
     const params = {
@@ -260,7 +260,7 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
     let uploadPath = '';
     if (req.files) {
         deleteFile(`.${avatar}`);
-        uploadPath = await uploadImage(req.files, info, 'user');
+        uploadPath = await uploadImage(req.files, info.user_id, 'user');
         if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
     }
 
