@@ -127,7 +127,10 @@ router.post('/register', [auth, landlord], async (req, res) => {
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     let uploadPath = '';
-    if (req.files) uploadPath = uploadImage(req.files, info, 'user');
+    if (req.files) {
+        uploadPath = uploadImage(req.files, info, 'user');
+        if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
+    }
 
     const newUserID = createdUser.data.dataValues.id;
     const creatorID = req.user.id;
@@ -179,6 +182,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
     if (req.files) {
         deleteFile(`.${avatar}`);
         uploadPath = uploadImage(req.files, info, 'user');
+        if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
     }
 
     const newData = await Landlords.update({
