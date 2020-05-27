@@ -106,7 +106,10 @@ router.get('/all', [auth, admin], async (req, res) => {
 router.post('/register', [auth, landlord], async (req, res) => {
   const prop = JSON.parse(req.body.json);
   let uploadPath = '';
-  if (req.files) uploadPath = uploadImage(req.files, prop, 'property');
+  if (req.files) {
+    uploadPath = uploadImage(req.files, prop, 'property');
+    if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
+  }
 
   const landlord_id = await mapLandlordID(prop.user_id);
   if (!landlord_id) return res.status(422).json({'result': 'A landlord user is missing'});
@@ -150,10 +153,11 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   const property_services = propData.property_services;
   const property_img = propData.property_img;
 
-  let uploadPath = ''
+  let uploadPath = '';
   if (req.files) {
     deleteFile(`.${property_img}`);
     uploadPath = uploadImage(req.files, prop, 'property');
+    if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
   }
 
   const newData = await Properties.update({
