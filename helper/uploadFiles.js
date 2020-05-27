@@ -1,4 +1,5 @@
 const fs = require('fs');
+const mkdirp = require('mkdirp');
 
 module.exports = async (file, data, type) => {
   const image = file.file;
@@ -14,9 +15,9 @@ module.exports = async (file, data, type) => {
   const displayPath = `/images/${data.user_id}/${location[type]}/${timeStamp}_${image.name}`;
 
   if (!fs.existsSync(uploadDirectory)){
-    // fs.mkdirSync(uploadPath);
     try {
-      await fs.promises.mkdir(uploadDirectory, { recursive: true })
+      // await mkdirp('/tmp/some/path/foo');
+      await fs.mkdir(uploadDirectory, { recursive: true });
     } catch (err) {
       throw new Error(err);
     }
