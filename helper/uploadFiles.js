@@ -16,11 +16,13 @@ module.exports = async (file, userID, type) => {
 
   if (!fs.existsSync(uploadDirectory)){
     try {
-      await fs.promises.mkdir(uploadDirectory, { recursive: true });
-
-      // Use the mv() method to place the file somewhere on your server
-      image.mv(uploadPath, (err) => {
+      await fs.mkdir(uploadDirectory, { recursive: true }, (err) => {
         if (err) throw new Error(err);
+
+        // Use the mv() method to place the file somewhere on your server
+        image.mv(uploadPath, (err) => {
+          if (err) throw new Error(err);
+        });
       });
     } catch (err) {
       throw new Error(err);
