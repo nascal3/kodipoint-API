@@ -1,5 +1,5 @@
 const fs = require('fs');
-const fsPromises = fs.promises;
+const mkdirp = require('mkdirp');
 
 module.exports = async (file, userID, type) => {
   const image = file.file;
@@ -14,17 +14,24 @@ module.exports = async (file, userID, type) => {
   const uploadPath = `./uploads/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
   const displayPath = `/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
 
-  if (!fs.existsSync(uploadDirectory)){
-    try {
-      await fsPromises.mkdir(uploadDirectory);
-      // Use the mv() method to place the file somewhere on your server
-      image.mv(uploadPath, (err) => {
-        if (err) throw new Error(err);
-      });
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
+  mkdirp('/tmp/foo/bar/baz', function (err) {
+    if (err) throw new Error(err);
+    image.mv(uploadPath, (err) => {
+      if (err) throw new Error(err);
+    });
+  });
+
+  // if (!fs.existsSync(uploadDirectory)){
+  //   try {
+  //     await fs.promises.mkdir(uploadDirectory, { recursive: true });
+  //     // Use the mv() method to place the file somewhere on your server
+  //     image.mv(uploadPath, (err) => {
+  //       if (err) throw new Error(err);
+  //     });
+  //   } catch (err) {
+  //     throw new Error(err);
+  //   }
+  // }
 
   return displayPath
 };
