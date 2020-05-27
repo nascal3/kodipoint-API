@@ -210,7 +210,7 @@ router.post('/register', [auth, tenant], async (req, res) => {
 
     let uploadPath = '';
     if (req.files) {
-        uploadPath = await uploadImage(req.files, info, 'user');
+        uploadPath = await uploadImage(req.files, createdUser, 'user');
         if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
     }
 
