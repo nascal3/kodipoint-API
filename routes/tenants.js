@@ -230,7 +230,6 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
     // const tenant_id = await mapTenantID(req.user.id)
     // const tenantID = req.body.tenant_id || tenant_id;
 
-
     const userData = await Tenants.findOne({
         where: {
             user_id: info.user_id
