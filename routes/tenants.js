@@ -224,7 +224,6 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
 
     const info = JSON.parse(req.body.json);
     // const userID = req.user.role === 'tenant' ? info.user_id : req.user.id;
-
     // const tenant_id = await mapTenantID(req.user.id)
     // const tenantID = req.body.tenant_id || tenant_id;
 
