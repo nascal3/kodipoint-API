@@ -157,7 +157,8 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   const userID = property_img.split('/')[1];
   let uploadPath = '';
   if (req.files) {
-    deleteFile(`.${property_img}`);
+    const deleted = await deleteFile(property_img);
+    if (!deleted) return;
     uploadPath = await uploadImage(req.files, userID, 'property');
     if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
   }

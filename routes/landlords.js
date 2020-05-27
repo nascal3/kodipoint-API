@@ -154,7 +154,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
     if (!userData) return res.status(404).json({'Error': 'User not found'});
 
-    const numberDuplicates = await duplicatesExcept(info)
+    const numberDuplicates = await duplicatesExcept(info);
     if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
 
     const params = {
@@ -163,7 +163,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
         'name':info.name,
         'role':info.role
     };
-    const editedUser = await users.editUser(params)
+    const editedUser = await users.editUser(params);
     if (!editedUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     const name = userData.name;
@@ -180,7 +180,8 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
     let uploadPath = '';
     if (req.files) {
-        deleteFile(`.${avatar}`);
+        const deleted = await deleteFile(avatar);
+        if (!deleted) return;
         uploadPath = await uploadImage(req.files, userID, 'user');
         if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
     }
