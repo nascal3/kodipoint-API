@@ -1,7 +1,7 @@
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 
-module.exports = async (file, data, type) => {
+module.exports = async (file, userID, type) => {
   const image = file.file;
   const timeStamp = +new Date();
 
@@ -10,9 +10,9 @@ module.exports = async (file, data, type) => {
     user: 'profile'
   };
 
-  const uploadDirectory = `./uploads/images/${data.user_id}/${location[type]}`;
-  const uploadPath = `./uploads/images/${data.user_id}/${location[type]}/${timeStamp}_${image.name}`;
-  const displayPath = `/images/${data.user_id}/${location[type]}/${timeStamp}_${image.name}`;
+  const uploadDirectory = `./uploads/images/${userID}/${location[type]}`;
+  const uploadPath = `./uploads/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
+  const displayPath = `/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
 
   if (!fs.existsSync(uploadDirectory)){
     try {

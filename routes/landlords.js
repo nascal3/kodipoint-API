@@ -126,14 +126,14 @@ router.post('/register', [auth, landlord], async (req, res) => {
     const createdUser = await users.createUser(params);
     if (!createdUser) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
-    let uploadPath = '';
-    if (req.files) {
-        uploadPath = await uploadImage(req.files, createdUser, 'user');
-        if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
-    }
-
     const newUserID = createdUser.data.dataValues.id;
     const creatorID = req.user.id;
+
+    let uploadPath = '';
+    if (req.files) {
+        uploadPath = await uploadImage(req.files, newUserID, 'user');
+        if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
+    }
 
     const userData = await users.createNewLandlord(newUserID, info, uploadPath, creatorID);
 
@@ -181,7 +181,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
     let uploadPath = '';
     if (req.files) {
         deleteFile(`.${avatar}`);
-        uploadPath = await uploadImage(req.files, info, 'user');
+        uploadPath = await uploadImage(req.files, userID, 'user');
         if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
     }
 
