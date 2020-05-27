@@ -128,7 +128,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
 
     let uploadPath = '';
     if (req.files) {
-        uploadPath = uploadImage(req.files, info, 'user');
+        uploadPath = await uploadImage(req.files, info, 'user');
         if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
     }
 
@@ -181,7 +181,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
     let uploadPath = '';
     if (req.files) {
         deleteFile(`.${avatar}`);
-        uploadPath = uploadImage(req.files, info, 'user');
+        uploadPath = await uploadImage(req.files, info, 'user');
         if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
     }
 
