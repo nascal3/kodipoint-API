@@ -16,16 +16,17 @@ module.exports = async (file, data, type) => {
 
   if (!fs.existsSync(uploadDirectory)){
     try {
-      await mkdirp(uploadPath);
-      // await fs.mkdir(uploadDirectory, { recursive: true });
+      // await mkdirp(uploadPath);
+      await fs.mkdir(uploadDirectory, { recursive: true });
+
+      // Use the mv() method to place the file somewhere on your server
+      image.mv(uploadPath, (err) => {
+        if (err) throw new Error(err);
+      });
     } catch (err) {
       throw new Error(err);
     }
   }
 
-  // Use the mv() method to place the file somewhere on your server
-  image.mv(uploadPath, (err) => {
-    if (err) throw new Error(err);
-  });
   return displayPath
 };
