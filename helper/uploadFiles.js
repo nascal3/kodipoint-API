@@ -16,8 +16,8 @@ module.exports = async (file, userID, type) => {
 
   if (!fs.existsSync(uploadDirectory)){
     try {
-      await mkdirp(uploadPath);
-      // await fs.mkdir(uploadDirectory, { recursive: true });
+      // await mkdirp(uploadPath);
+      await fs.promises.mkdir(uploadDirectory, { recursive: true });
 
       // Use the mv() method to place the file somewhere on your server
       image.mv(uploadPath, (err) => {
