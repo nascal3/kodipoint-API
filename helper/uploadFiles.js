@@ -5,7 +5,7 @@ module.exports = (file, data, type) => {
   const location = {
     property: 'properties',
     user: 'profile'
-  }
+  };
 
   const uploadPath = `./uploads/images/${data.user_id}/${location[type]}/${timeStamp}_${image.name}`;
   const displayPath = `/images/${data.user_id}/${location[type]}/${timeStamp}_${image.name}`;
