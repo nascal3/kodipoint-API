@@ -14,7 +14,7 @@ module.exports = async (file, userID, type) => {
   const uploadPath = `./uploads/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
   const displayPath = `/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
 
-  mkdirp('/tmp/foo/bar/baz', function (err) {
+  mkdirp(uploadDirectory, (err) => {
     if (err) throw new Error(err);
     image.mv(uploadPath, (err) => {
       if (err) throw new Error(err);
