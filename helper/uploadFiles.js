@@ -16,8 +16,8 @@ module.exports = async (file, data, type) => {
 
   if (!fs.existsSync(uploadDirectory)){
     try {
-      // await mkdirp('/tmp/some/path/foo');
-      await fs.mkdir(uploadDirectory, { recursive: true });
+      await mkdirp(uploadPath);
+      // await fs.mkdir(uploadDirectory, { recursive: true });
     } catch (err) {
       throw new Error(err);
     }
