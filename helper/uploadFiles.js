@@ -1,4 +1,6 @@
 const fs = require('fs');
+const path = require('path');
+const appRoot = path.join(__dirname, '..' +'/uploads');
 
 module.exports = async (file, userID, type) => {
   const image = file.file;
@@ -9,8 +11,8 @@ module.exports = async (file, userID, type) => {
     user: 'profile'
   };
 
-  const uploadDirectory = `./uploads/images/${userID}/${location[type]}`;
-  const uploadPath = `./uploads/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
+  const uploadDirectory = `${appRoot}/images/${userID}/${location[type]}`;
+  const uploadPath = `${appRoot}/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
   const displayPath = `/images/${userID}/${location[type]}/${timeStamp}_${image.name}`;
 
   const createDirPath = async () => {

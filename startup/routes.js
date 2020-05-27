@@ -5,7 +5,7 @@ const landlords = require('../routes/landlords');
 const tenants = require('../routes/tenants');
 const tenantsProps = require('../routes/tenantsProps');
 const properties = require('../routes/properties');
-const path = require("path");
+const path = require('path');
 const fileUpload = require('express-fileupload');
 
 module.exports = (app) => {
