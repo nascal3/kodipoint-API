@@ -12,7 +12,6 @@ const tenant = require('../middleware/tenantAuth');
 const landlord = require('../middleware/landlordAuth');
 
 const users = require('./users');
-
 const propertyFunctions = require('./properties');
 const uploadImage = require('../helper/uploadFiles');
 const deleteFile = require('../helper/deleteUploadedFiles');

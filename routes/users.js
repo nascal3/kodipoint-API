@@ -7,7 +7,6 @@ const Op = Sequelize.Op;
 const Users = require('../models/userModel');
 const Landlords = require('../models/landlordModel');
 const Tenants = require('../models/tenantModel');
-const createTenant = require('./tenants');
 
 const generateToken = require('../middleware/usersTokenGen');
 const auth = require('../middleware/auth');

@@ -10,8 +10,6 @@ const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 
 const users = require('./users');
-const editUser = require('./users');
-
 const uploadImage = require('../helper/uploadFiles');
 const deleteFile = require('../helper/deleteUploadedFiles');
 require('express-async-errors');
