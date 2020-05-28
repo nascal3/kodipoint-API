@@ -32,7 +32,7 @@ const getLandlordByID = async (landlord_id) => {
     });
 };
 
-// GET ONE LANDLORD BY ID
+// GET ONE LANDLORD BY USER_ID
 router.get('/single', [auth, landlord], async (req, res) => {
     const ID = req.body.id || req.user.id;
     const userData = await getLandlord(ID);
