@@ -28,11 +28,11 @@ const mapTenantID = async (user_id) => {
     return results ? results.dataValues.id : 0
 };
 
-// ***Function get single tenant records***
-const getTenant = async (tenant_id) => {
-    return await Tenants.findAll({
+// ***Function get single tenant records using their user_id***
+const getTenant = async (user_id) => {
+    return await Tenants.findOne({
         where: {
-            id: tenant_id
+            user_id: user_id
         }
     });
 };
@@ -96,7 +96,8 @@ const getLandlordTenants = async (landlordID) => {
 
 // GET ONE TENANT BY ID
 router.get('/single', [auth, tenant], async (req, res) => {
-    const userData = await getTenant(req.body.tenant_id);
+    const ID = req.body.user_id || req.user.id;
+    const userData = await getTenant(ID);
     res.status(200).json({ 'results': userData});
 });
 

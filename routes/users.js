@@ -94,7 +94,12 @@ const createUser = async (user_info) => {
     });
 
     //generate User token
-    const token = generateToken(userData.id, userData.email, userData.role);
+    const token = generateToken(
+        userData.id,
+        userData.email,
+        userData.name,
+        userData.role,
+    );
 
     // hide data from json results
     userData.password = undefined;
@@ -157,9 +162,14 @@ router.post('/register', async (req, res) => {
     const newUserID = results.data.dataValues.id;
     const creatorID = newUserID;
 
-    req.body.role !== 'tenant'
-        ? await createNewLandlord(newUserID, params, '', creatorID)
-        : await createNewTenant(newUserID, params, '', creatorID);
+    if (req.body.role === 'tenant') {
+        await createNewTenant(newUserID, params, '', creatorID);
+    } else if (req.body.role === 'landlord') {
+        await createNewLandlord(newUserID, params, '', creatorID);
+    } else {
+        await createNewLandlord(newUserID, params, '', creatorID);
+        await createNewTenant(newUserID, params, '', creatorID);
+    }
 
     // set authorisation header
     return res.header('Authorization', results.token).status(200).json({'user':results.data, 'token': results.token});
