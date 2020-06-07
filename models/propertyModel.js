@@ -26,7 +26,7 @@ const propertyModel = connection.define('property', {
     },
     phone: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     lr_nos: {
         type: Sequelize.STRING,
@@ -40,6 +40,14 @@ const propertyModel = connection.define('property', {
     description: {
         type:Sequelize.TEXT,
         allowNull: true
+    },
+    property_location: {
+        type:Sequelize.TEXT,
+        allowNull: false
+    },
+    property_coordinates: {
+        type:Sequelize.STRING(30),
+        allowNull: false
     },
     property_services: {
         type:Sequelize.TEXT,
@@ -56,8 +64,19 @@ const propertyModel = connection.define('property', {
             key: userModel.id
         },
         allowNull: false
-    }
-
+    },
+    approved: {
+        type:Sequelize.BOOLEAN,
+        allowNull: false
+    },
+    approvedBy: {
+        type:Sequelize.INTEGER,
+        references: {
+            model: userModel,
+            key: userModel.id
+        },
+        allowNull: true
+    },
 },{
     indexes:[
         {

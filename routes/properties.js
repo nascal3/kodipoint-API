@@ -14,6 +14,29 @@ const uploadImage = require('../helper/uploadFiles')
 const deleteFile = require('../helper/deleteUploadedFiles')
 require('express-async-errors');
 
+//***Function look for duplicates of LR numbers***
+const duplicateLR = async (info) => {
+  return await Properties.findOne({
+    where: {
+      lr_nos: info.lr_nos
+    }
+  })
+};
+
+//***Function check edit LR number not duplicate***
+const checkDuplicateLR = async (info) => {
+  return await Properties.findAll({
+    where: {
+      lr_nos: info.lr_nos,
+      [Op.and]: {
+        id: {
+          [Op.ne]: info.id
+        }
+      }
+    }
+  });
+};
+
 // ***Function get single property records***
 const getProperty = async (prop_id) => {
     return await Properties.findOne({
@@ -109,13 +132,16 @@ router.post('/register', [auth, landlord], async (req, res) => {
   const landlord_id = await mapLandlordID(prop.user_id);
   if (!landlord_id) return res.status(422).json({'result': 'A landlord user is missing'});
 
+  const duplicateLRNumber = await duplicateLR(prop);
+  if (duplicateLRNumber) return res.status(422).json({'Error': 'The following LR number is already registered!'});
+
   let uploadPath = '';
   if (req.files) {
     uploadPath = await uploadImage(req.files, prop.user_id, 'property');
     if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
   }
 
-  const propData = await Properties .create({
+  const propData = await Properties.create({
     landlord_id: landlord_id,
     property_name: prop.property_name,
     property_type: prop.property_type,
@@ -153,6 +179,9 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   const description = propData.description;
   const property_services = propData.property_services;
   const property_img = propData.property_img;
+
+  const duplicateLRNumber = await checkDuplicateLR(propData);
+  if (duplicateLRNumber.length > 0) return res.status(422).json({'Error': 'The following LR number is already registered!'});
 
   const userID = property_img.split('/')[1];
   let uploadPath = '';
