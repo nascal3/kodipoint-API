@@ -46,7 +46,7 @@ const propertyModel = connection.define('property', {
         allowNull: false
     },
     property_coordinates: {
-        type:Sequelize.STRING(30),
+        type:Sequelize.STRING(60),
         allowNull: false
     },
     property_services: {

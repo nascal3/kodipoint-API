@@ -150,8 +150,11 @@ router.post('/register', [auth, landlord], async (req, res) => {
     lr_nos: prop.lr_nos,
     nos_units: prop.nos_units,
     description: prop.description,
+    property_location: prop.property_location,
+    property_coordinates: prop.property_coordinates,
     property_services: prop.property_services,
     property_img: uploadPath,
+    approved: 0,
     updatedBy: req.user.id
   });
 
@@ -177,6 +180,8 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   const lr_nos = propData.lr_nos;
   const nos_units = propData.nos_units;
   const description = propData.description;
+  const property_location = propData.property_location;
+  const property_coordinates = propData.property_coordinates;
   const property_services = propData.property_services;
   const property_img = propData.property_img;
 
@@ -203,6 +208,8 @@ router.post('/edit', [auth, landlord], async (req, res) => {
     description: prop.description || description,
     property_services: prop.property_services || property_services,
     property_img: uploadPath || property_img,
+    property_location: prop.property_location || property_location,
+    property_coordinates: prop.property_coordinates || property_coordinates,
     updatedBy: req.user.id
   },
   {
