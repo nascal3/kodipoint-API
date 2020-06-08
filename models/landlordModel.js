@@ -70,6 +70,14 @@ const landlordModel = connection.define('landlord', {
         defaultValue: 0,
         allowNull: false
     },
+    approvedBy: {
+        type:Sequelize.INTEGER,
+        references: {
+            model: userModel,
+            key: userModel.id
+        },
+        allowNull: false
+    },
     updatedBy: {
         type:Sequelize.INTEGER,
         references: {

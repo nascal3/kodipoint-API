@@ -215,7 +215,7 @@ router.post('/profile/approve', [auth, admin], async (req, res) => {
 
     const newData = await Landlords.update({
         approved: req.body.approval,
-        updatedBy:  req.user.id
+        approvedBy:  req.user.id
     },{
         where: {
             landlord_id: landlordID
