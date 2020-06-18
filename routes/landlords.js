@@ -110,7 +110,7 @@ const duplicatesExcept = async (info) => {
 // REGISTER LANDLORDS PERSONAL DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
-    const info = JSON.parse(req.body.json);
+    const info = JSON.parse(req.body.data);
     const numberDuplicates = await duplicates(info);
     if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
 
@@ -141,7 +141,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
 // EDIT LANDLORDS PERSONAL DETAILS
 router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
-    const info = JSON.parse(req.body.json);
+    const info = JSON.parse(req.body.data);
     const userID = req.user.role === 'admin' ? info.user_id : req.user.id;
 
     const userData = await Landlords.findOne({
@@ -157,7 +157,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
     const params = {
         'id': userID,
-        'username':info.email,
+        'username':info.email || userData.email,
         'name':info.name,
         'role':info.role
     };
