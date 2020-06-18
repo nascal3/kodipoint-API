@@ -194,7 +194,7 @@ router.post('/landlord/search', [auth, landlord], async (req, res) => {
 // REGISTER TENANTS PERSONAL DETAILS
 router.post('/register', [auth, tenant], async (req, res) => {
 
-    const info = JSON.parse(req.body.json);
+    const info = JSON.parse(req.body.data);
     const numberDuplicates = await duplicateID(info);
     if (numberDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
 
@@ -225,25 +225,27 @@ router.post('/register', [auth, tenant], async (req, res) => {
 // EDIT TENANTS PERSONAL DETAILS
 router.post('/profile/edit', [auth, tenant], async (req, res) => {
 
-    const info = JSON.parse(req.body.json);
-    // const userID = req.user.role === 'tenant' ? info.user_id : req.user.id;
+    const info = JSON.parse(req.body.data);
+    const userID = info.user_id || req.user.id;
     // const tenant_id = await mapTenantID(req.user.id)
     // const tenantID = req.body.tenant_id || tenant_id;
 
     const userData = await Tenants.findOne({
         where: {
-            user_id: info.user_id
+            user_id: userID
         }
     });
 
     if (!userData) return res.status(404).json({'Error': 'Tenant not found'});
 
-    const numberIdDuplicates = await duplicateID(info);
-    if (numberIdDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
+    if (info.national_id) {
+        const numberIdDuplicates = await duplicateID(info);
+        if (numberIdDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
+    }
 
     const params = {
-        'id': info.user_id,
-        'username':info.email,
+        'id': userID,
+        'username':info.email || userData.email,
         'name':info.name
     };
 
@@ -274,12 +276,12 @@ router.post('/profile/edit', [auth, tenant], async (req, res) => {
     },
         {
             where: {
-                user_id: info.user_id
+                user_id: userID
             }
         }
     );
 
-   const changedData = await getTenant(info.user_id);
+   const changedData = await getTenant(userID);
 
    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
