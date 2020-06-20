@@ -100,7 +100,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
 
     const info = JSON.parse(req.body.data);
     const IdNumberDuplicates = await duplicateID(info);
-    if (IdNumberDuplicates) return res.status(422).json({'Error': 'The national ID already exists!'});
+    if (IdNumberDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
 
     const kraPinNumberDuplicates = await duplicateKRApin(info);
     if (kraPinNumberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin already exists!'});
