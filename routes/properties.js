@@ -105,6 +105,7 @@ router.post('/landlord', [auth, landlord], async (req, res) => {
 
   const userID = adminRole ? req.body.user_id : req.user.id;
   const landlordID = await mapLandlordID(userID); // get user ID from token in header or request body
+  console.log('>>>', userID, 'XXX', landlordID)
 
   const results = await Properties.findAll({
       where: {
