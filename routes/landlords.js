@@ -75,33 +75,21 @@ router.get('/all', [auth, admin], async (req, res) => {
     res.status(200).json({'result': landlords});
 });
 
-//***Function look for duplicates of KRA Pin or national ID***
-const duplicates = async (info) => {
+//***Function look for duplicates of KRA Pin or national ID on whole landlord table ***
+// user ID exception***
+const duplicateID = async (info) => {
     const landlordsResults  = await Landlords.findAll({
         where: {
-            [Op.or]: [
-                { kra_pin: info.kra_pin },
-                { national_id: info.national_id }
-            ]
+            national_id: info.national_id
         }
     });
     return Object.keys(landlordsResults).length
 };
-
-//***Function look for duplicates of KRA Pin or national ID with current
-// user ID exception***
-const duplicatesExcept = async (info) => {
+// user KRA PIN exception***
+const duplicateKRApin = async (info) => {
     const landlordsResults  = await Landlords.findAll({
         where: {
-            [Op.or]: [
-                { kra_pin: info.kra_pin },
-                { national_id: info.national_id }
-            ],
-            [Op.and]: {
-                user_id: {
-                    [Op.ne]: info.user_id
-                }
-            }
+            kra_pin: info.kra_pin
         }
     });
     return Object.keys(landlordsResults).length
@@ -110,9 +98,12 @@ const duplicatesExcept = async (info) => {
 // REGISTER LANDLORDS PERSONAL DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
 
-    const info = JSON.parse(req.body.json);
-    const numberDuplicates = await duplicates(info);
-    if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
+    const info = JSON.parse(req.body.data);
+    const IdNumberDuplicates = await duplicateID(info);
+    if (IdNumberDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
+
+    const kraPinNumberDuplicates = await duplicateKRApin(info);
+    if (kraPinNumberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin already exists!'});
 
     const params = {
         'email':info.email,
@@ -138,10 +129,40 @@ router.post('/register', [auth, landlord], async (req, res) => {
     res.status(200).json({'result': userData});
 });
 
+//***Function look for duplicates of KRA Pin or national ID for editing except on currently selected landlord
+// user ID exception***
+const duplicatesIDExcept = async (info, userID) => {
+    const landlordsResults  = await Landlords.findAll({
+        where: {
+            national_id: info.national_id ,
+            [Op.and]: {
+                user_id: {
+                    [Op.ne]: userID
+                }
+            }
+        }
+    });
+    return Object.keys(landlordsResults).length
+};
+// user KRA PIN exception***
+const duplicatesKRAExcept = async (info, userID) => {
+    const landlordsResults  = await Landlords.findAll({
+        where: {
+            kra_pin: info.kra_pin,
+            [Op.and]: {
+                user_id: {
+                    [Op.ne]: userID
+                }
+            }
+        }
+    });
+    return Object.keys(landlordsResults).length
+};
+
 // EDIT LANDLORDS PERSONAL DETAILS
 router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
-    const info = JSON.parse(req.body.json);
+    const info = JSON.parse(req.body.data);
     const userID = req.user.role === 'admin' ? info.user_id : req.user.id;
 
     const userData = await Landlords.findOne({
@@ -152,12 +173,15 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
     if (!userData) return res.status(404).json({'Error': 'User not found'});
 
-    const numberDuplicates = await duplicatesExcept(info);
-    if (numberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin/national ID already exists!'});
+    const idNumberDuplicates = await duplicatesIDExcept(info, userID);
+    if (idNumberDuplicates) return res.status(422).json({'Error': 'The following national ID already exists!'});
+
+    const KRAnumberDuplicates = await duplicatesKRAExcept(info, userID);
+    if (KRAnumberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin already exists!'});
 
     const params = {
         'id': userID,
-        'username':info.email,
+        'username':info.email || userData.email,
         'name':info.name,
         'role':info.role
     };

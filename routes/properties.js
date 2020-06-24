@@ -127,7 +127,7 @@ router.get('/all', [auth, admin], async (req, res) => {
 
 // REGISTER PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
-  const prop = JSON.parse(req.body.json);
+  const prop = JSON.parse(req.body.data);
 
   const landlord_id = await mapLandlordID(prop.user_id);
   if (!landlord_id) return res.status(422).json({'result': 'A landlord user is missing'});
@@ -163,7 +163,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
 
 // EDIT PROPERTY DETAILS
 router.post('/edit', [auth, landlord], async (req, res) => {
-  const prop = JSON.parse(req.body.json)
+  const prop = JSON.parse(req.body.data)
   const propData = await Properties.findOne({
     where: {
       id: prop.id
@@ -188,12 +188,11 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   const duplicateLRNumber = await checkDuplicateLR(propData);
   if (duplicateLRNumber.length > 0) return res.status(422).json({'Error': 'The following LR number is already registered!'});
 
-  const userID = property_img.split('/')[1];
   let uploadPath = '';
   if (req.files) {
     const deleted = await deleteFile(property_img);
     if (!deleted) return;
-    uploadPath = await uploadImage(req.files, userID, 'property');
+    uploadPath = await uploadImage(req.files, prop.user_id, 'property');
     if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
   }
 
