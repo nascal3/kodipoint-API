@@ -126,6 +126,7 @@ const createNewLandlord = async (newUserID, info, uploadPath, creator) => {
         bank_swift: info.bank_swift,
         bank_currency: info.bank_currency,
         avatar: uploadPath,
+        approved: 0,
         updatedBy: creatorID
     });
 };
