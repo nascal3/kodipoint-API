@@ -98,7 +98,12 @@ router.post('/landlord', [auth, landlord], async (req, res) => {
   const limit= req.body.limit;   // number of records per page
   const offset = req.body.offset;
 
-  const userID = req.user.role === 'admin' ? (req.body.user_id ? req.body.user_id : 0) : req.user.id;
+  let adminRole = false;
+  if (req.user.role === 'admin' || req.user.role === 'superUser') {
+    adminRole = true;
+  }
+
+  const userID = adminRole ? req.body.user_id : req.user.id;
   const landlordID = await mapLandlordID(userID); // get user ID from token in header or request body
 
   const results = await Properties.findAll({
