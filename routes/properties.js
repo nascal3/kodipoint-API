@@ -99,7 +99,7 @@ router.post('/landlord', [auth, landlord], async (req, res) => {
   const offset = req.body.offset;
 
   let adminRole = false;
-  if (req.user.role === 'admin' || req.user.role === 'superUser') {
+  if (req.user.role === 'admin' || req.user.role === 'superU') {
     adminRole = true;
   }
 
