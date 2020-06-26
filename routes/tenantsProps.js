@@ -20,7 +20,7 @@ const getSingleTenantRec = async (rec_id) => {
     });
 };
 
-// GET SINGLE TENANT ALL RENTING INFO BY TENANT ID & DATE MOVED IN.
+// GET SINGLE TENANTS' ALL RENTING INFO BY TENANT ID & DATE MOVED IN.
 router.get('/single', [auth, admin, landlords, tenants], async (req, res) => {
 
     let to_date =req.body.to_date;
@@ -57,7 +57,7 @@ router.get('/single', [auth, admin, landlords, tenants], async (req, res) => {
     res.status(200).json({'result': records});
 });
 
-// REGISTER TENANTS TO MOVED IN PROPERTY (add tenant to a newly rented property)
+// REGISTER TENANT TO MOVE INTO PROPERTY (add tenant to a newly rented property)
 router.post('/movein', [auth, admin], async (req, res) => {
 
     const userData = await TenantsProps .create({
@@ -67,14 +67,13 @@ router.post('/movein', [auth, admin], async (req, res) => {
         unit_rent: req.body.unit_rent,
         landlord_id: req.body.landlord_id,
         move_in_date: req.body.move_in_date,
-        phone: req.body.phone,
         created_by: req.user.id
     });
 
     res.status(200).json({'result': userData});
 });
 
-// EDIT TENANTS RENTING DETAILS (also used for moving tenant out of rented property)
+// EDIT TENANT RENTING DETAILS (also used for moving tenant out of rented property)
 router.post('/edit', [auth, admin], async (req, res) => {
 
     const editedBy = req.user.id;

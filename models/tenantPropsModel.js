@@ -45,10 +45,6 @@ const tenantPropsModel = connection.define('tenant_property', {
         type:Sequelize.DATE,
         allowNull: true
     },
-    phone: {
-        type:Sequelize.STRING,
-        allowNull: true
-    },
     created_by: {
         type:Sequelize.INTEGER,
         allowNull: false
