@@ -63,6 +63,7 @@ router.post('/movein', [auth, admin], async (req, res) => {
     const userData = await TenantsProps .create({
         tenant_id: req.body.tenant_id,
         property_id: req.body.property_id,
+        property_name: req.body.property_name,
         unit_no: req.body.unit_no,
         unit_rent: req.body.unit_rent,
         landlord_id: req.body.landlord_id,
