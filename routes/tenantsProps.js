@@ -60,13 +60,26 @@ router.get('/single', [auth, admin, landlords, tenants], async (req, res) => {
 // REGISTER TENANT TO MOVE INTO PROPERTY (add tenant to a newly rented property)
 router.post('/movein', [auth, admin], async (req, res) => {
 
-    const userData = await TenantsProps .create({
+    const unitNumber = req.body.unit_no
+
+    const duplicateEntry = await TenantsProps.findOne({
+        where: {
+            property_id: req.body.property_id,
+            tenant_id: req.body.tenant_id,
+            unit_no: unitNumber.toLowerCase(),
+        }
+    });
+
+    if (duplicateEntry) return res.status(422).json({'Error': 'The entry has already been done!'});
+
+    const userData = await TenantsProps.create({
         tenant_id: req.body.tenant_id,
         property_id: req.body.property_id,
         property_name: req.body.property_name,
-        unit_no: req.body.unit_no,
+        unit_no: unitNumber.toLowerCase(),
         unit_rent: req.body.unit_rent,
         landlord_id: req.body.landlord_id,
+        landlord_name: req.body.landlord_name,
         move_in_date: req.body.move_in_date,
         created_by: req.user.id
     });
