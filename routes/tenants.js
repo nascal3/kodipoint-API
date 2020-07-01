@@ -102,7 +102,7 @@ router.get('/single', [auth, tenant], async (req, res) => {
 });
 
 // GET ALL TENANTS LIST
-router.get('/all', [auth, admin], async (req, res) => {
+router.get('/all', [auth, landlord], async (req, res) => {
     const limit= req.body.limit;   // number of records per page
     const offset = req.body.offset;
 
@@ -115,7 +115,7 @@ router.get('/all', [auth, admin], async (req, res) => {
 });
 
 // SEARCH FOR A TENANT
-router.post('/search', [auth, admin], async (req, res) => {
+router.post('/search', [auth, landlord], async (req, res) => {
     const searchPhrase = req.body.search_phrase;
     const searchResults  = await searchTenant(searchPhrase)
     res.status(200).json({ 'result': searchResults});

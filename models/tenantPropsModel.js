@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const connection= require('../startup/db');
+const landlordModel = require('./landlordModel');
 const tenantModel = require('./tenantModel');
 const propertyModel = require('./propertyModel');
 
@@ -25,6 +26,10 @@ const tenantPropsModel = connection.define('tenant_property', {
         },
         allowNull: false
     },
+    property_name: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     unit_no: {
         type: Sequelize.STRING,
         allowNull: false
@@ -35,6 +40,14 @@ const tenantPropsModel = connection.define('tenant_property', {
     },
     landlord_id: {
         type:Sequelize.INTEGER,
+        references: {
+            model: landlordModel,
+            key: landlordModel.landlord_id
+        },
+        allowNull: false
+    },
+    landlord_name: {
+        type: Sequelize.STRING,
         allowNull: false
     },
     move_in_date: {
@@ -43,10 +56,6 @@ const tenantPropsModel = connection.define('tenant_property', {
     },
     move_out_date: {
         type:Sequelize.DATE,
-        allowNull: true
-    },
-    phone: {
-        type:Sequelize.STRING,
         allowNull: true
     },
     created_by: {

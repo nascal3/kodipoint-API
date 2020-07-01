@@ -118,7 +118,7 @@ router.post('/landlord', [auth, landlord], async (req, res) => {
 });
 
 // GET ALL PROPERTIES LIST .
-router.get('/all', [auth, admin], async (req, res) => {
+router.post('/all', [auth, admin], async (req, res) => {
   const limit= req.body.limit;   // number of records per page
   const offset = req.body.offset;
 

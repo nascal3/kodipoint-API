@@ -6,7 +6,7 @@ const router = express.Router();
 const TenantsProps = require('../models/tenantPropsModel');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
-const landlords = require('../middleware/landlordAuth');
+const landlord = require('../middleware/landlordAuth');
 const tenants = require('../middleware/tenantAuth');
 
 require('express-async-errors');
@@ -20,61 +20,77 @@ const getSingleTenantRec = async (rec_id) => {
     });
 };
 
-// GET SINGLE TENANT ALL RENTING INFO BY TENANT ID & DATE MOVED IN.
-router.get('/single', [auth, admin, landlords, tenants], async (req, res) => {
-
-    let to_date =req.body.to_date;
-    let from_date = req.body.from_date;
+// GET SINGLE TENANTS' ALL RENTING INFO BY TENANT ID.
+router.post('/single', [auth], async (req, res) => {
     const tenant_id = req.body.tenant_id;
+    const landlord_id  = req.body.landlord_id || 0;
 
-    if (!to_date) {
-        to_date = new Date();
-    }
+    let records = null;
+    const userRole = req.user.role;
 
-    if (!from_date) {
-        const currentDate = new Date();
-        from_date = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
-    }
-
-    const limit= req.body.limit; // number of records per page
-    const offset = req.body.offset;
-
-    const records = await TenantsProps.findAll({
-        order: [
-            ['move_in_date', 'DESC']
-        ],
-        where: {
-            tenant_id: tenant_id,
-            move_in_date: {
-                [Op.gte]: from_date,
-                [Op.lte]: to_date
+    if (userRole === 'admin' || userRole === 'superU' || userRole === 'tenant') {
+        records = await TenantsProps.findAll({
+            order: [
+                ['move_in_date', 'DESC']
+            ],
+            where: {
+                tenant_id: tenant_id
             }
-        },
-        limit: limit,
-        offset: offset
-    });
+        });
+    } else if (userRole === 'landlord' || userRole === 'landlordTenant') {
+        records = await TenantsProps.findAll({
+            order: [
+                ['move_in_date', 'DESC']
+            ],
+            where: {
+                tenant_id: tenant_id,
+                landlord_id: landlord_id
+            }
+        });
+    }
 
     res.status(200).json({'result': records});
 });
 
-// REGISTER TENANTS TO MOVED IN PROPERTY (add tenant to a newly rented property)
-router.post('/movein', [auth, admin], async (req, res) => {
+// REGISTER TENANT TO MOVE INTO PROPERTY (add tenant to a newly rented property)
+router.post('/movein', [auth, landlord], async (req, res) => {
 
-    const userData = await TenantsProps .create({
+    const unitNumber = req.body.unit_no
+
+    const duplicateEntry = await TenantsProps.findOne({
+        where: {
+            property_id: req.body.property_id,
+            tenant_id: req.body.tenant_id,
+            unit_no: unitNumber.toLowerCase()
+        }
+    });
+    if (duplicateEntry) return res.status(422).json({'Error': 'The entry has already been done!'});
+
+    const propertyNotVacant = await TenantsProps.findOne({
+        where: {
+            property_id: req.body.property_id,
+            unit_no: unitNumber.toLowerCase(),
+            move_out_date: null
+        }
+    });
+    if (propertyNotVacant) return res.status(422).json({'Error': 'This property is not vacant!'});
+
+    const userData = await TenantsProps.create({
         tenant_id: req.body.tenant_id,
         property_id: req.body.property_id,
-        unit_no: req.body.unit_no,
+        property_name: req.body.property_name,
+        unit_no: unitNumber.toLowerCase(),
         unit_rent: req.body.unit_rent,
         landlord_id: req.body.landlord_id,
+        landlord_name: req.body.landlord_name,
         move_in_date: req.body.move_in_date,
-        phone: req.body.phone,
         created_by: req.user.id
     });
 
     res.status(200).json({'result': userData});
 });
 
-// EDIT TENANTS RENTING DETAILS (also used for moving tenant out of rented property)
+// EDIT TENANT RENTING DETAILS (also used for moving tenant out of rented property)
 router.post('/edit', [auth, admin], async (req, res) => {
 
     const editedBy = req.user.id;
