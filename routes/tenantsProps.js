@@ -22,36 +22,15 @@ const getSingleTenantRec = async (rec_id) => {
 
 // GET SINGLE TENANTS' ALL RENTING INFO BY TENANT ID & DATE MOVED IN.
 router.get('/single', [auth, admin, landlords, tenants], async (req, res) => {
-
-    let to_date =req.body.to_date;
-    let from_date = req.body.from_date;
     const tenant_id = req.body.tenant_id;
-
-    if (!to_date) {
-        to_date = new Date();
-    }
-
-    if (!from_date) {
-        const currentDate = new Date();
-        from_date = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
-    }
-
-    const limit= req.body.limit; // number of records per page
-    const offset = req.body.offset;
 
     const records = await TenantsProps.findAll({
         order: [
             ['move_in_date', 'DESC']
         ],
         where: {
-            tenant_id: tenant_id,
-            move_in_date: {
-                [Op.gte]: from_date,
-                [Op.lte]: to_date
-            }
-        },
-        limit: limit,
-        offset: offset
+            tenant_id: tenant_id
+        }
     });
 
     res.status(200).json({'result': records});
