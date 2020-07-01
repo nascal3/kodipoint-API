@@ -6,7 +6,7 @@ const router = express.Router();
 const TenantsProps = require('../models/tenantPropsModel');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
-const landlords = require('../middleware/landlordAuth');
+const landlord = require('../middleware/landlordAuth');
 const tenants = require('../middleware/tenantAuth');
 
 require('express-async-errors');
@@ -20,24 +20,40 @@ const getSingleTenantRec = async (rec_id) => {
     });
 };
 
-// GET SINGLE TENANTS' ALL RENTING INFO BY TENANT ID & DATE MOVED IN.
-router.get('/single', [auth, admin, landlords, tenants], async (req, res) => {
+// GET SINGLE TENANTS' ALL RENTING INFO BY TENANT ID.
+router.post('/single', [auth], async (req, res) => {
     const tenant_id = req.body.tenant_id;
+    const landlord_id  = req.body.landlord_id || 0;
 
-    const records = await TenantsProps.findAll({
-        order: [
-            ['move_in_date', 'DESC']
-        ],
-        where: {
-            tenant_id: tenant_id
-        }
-    });
+    let records = null;
+    const userRole = req.user.role;
+
+    if (userRole === 'admin' || userRole === 'superU' || userRole === 'tenant') {
+        records = await TenantsProps.findAll({
+            order: [
+                ['move_in_date', 'DESC']
+            ],
+            where: {
+                tenant_id: tenant_id
+            }
+        });
+    } else if (userRole === 'landlord' || userRole === 'landlordTenant') {
+        records = await TenantsProps.findAll({
+            order: [
+                ['move_in_date', 'DESC']
+            ],
+            where: {
+                tenant_id: tenant_id,
+                landlord_id: landlord_id
+            }
+        });
+    }
 
     res.status(200).json({'result': records});
 });
 
 // REGISTER TENANT TO MOVE INTO PROPERTY (add tenant to a newly rented property)
-router.post('/movein', [auth, admin], async (req, res) => {
+router.post('/movein', [auth, landlord], async (req, res) => {
 
     const unitNumber = req.body.unit_no
 
@@ -45,11 +61,19 @@ router.post('/movein', [auth, admin], async (req, res) => {
         where: {
             property_id: req.body.property_id,
             tenant_id: req.body.tenant_id,
-            unit_no: unitNumber.toLowerCase(),
+            unit_no: unitNumber.toLowerCase()
         }
     });
-
     if (duplicateEntry) return res.status(422).json({'Error': 'The entry has already been done!'});
+
+    const propertyNotVacant = await TenantsProps.findOne({
+        where: {
+            property_id: req.body.property_id,
+            unit_no: unitNumber.toLowerCase(),
+            move_out_date: null
+        }
+    });
+    if (propertyNotVacant) return res.status(422).json({'Error': 'This property is not vacant!'});
 
     const userData = await TenantsProps.create({
         tenant_id: req.body.tenant_id,
