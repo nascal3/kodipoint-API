@@ -90,16 +90,26 @@ router.post('/movein', [auth, landlord], async (req, res) => {
     res.status(200).json({'result': userData});
 });
 
+// GET TENANT SINGLE RENTING RECORD
+router.get('/row', [auth, landlord], async (req, res) => {
+    const recordData = await TenantsProps.findOne({
+        where: {
+            id: req.body.record_id
+        }
+    });
+
+    res.status(200).json({ 'results': recordData });
+});
+
 // EDIT TENANT RENTING DETAILS (also used for moving tenant out of rented property)
-router.post('/edit', [auth, admin], async (req, res) => {
+router.post('/edit', [auth, landlord], async (req, res) => {
 
     const editedBy = req.user.id;
     const dbRecID = req.body.db_id;
 
     const userData = await TenantsProps.findOne({
         where: {
-            id: dbRecID,
-            tenant_id: res.body.tenant_id
+            id: dbRecID
         }
     });
 
@@ -110,9 +120,9 @@ router.post('/edit', [auth, admin], async (req, res) => {
     const unitNo = userData.unit_no;
     const unitRent = userData.unit_rent;
     const landlordID = userData.landlord_id;
+    const landlordName = userData.landlord_name;
     const moveInDate = userData.move_in_date;
     const moveOutDate = userData.move_out_date;
-    const phone = userData.phone;
 
     const newData = await TenantsProps.update({
             tenant_id: req.body.tenant_id || tenantID,
@@ -120,22 +130,21 @@ router.post('/edit', [auth, admin], async (req, res) => {
             unit_no: req.body.unit_no || unitNo,
             unit_rent: req.body.unit_rent || unitRent,
             landlord_id: req.body.landlord_id || landlordID,
+            landlord_name: req.body.landlord_name || landlordName,
             move_in_date: req.body.move_in_date || moveInDate,
             move_out_date: req.body.move_out_date || moveOutDate,
-            phone: req.body.phone || phone,
             edited_by: editedBy
     },
         {
             where: {
-              id: dbRecID,
-              tenant_id: res.body.tenant_id
+              id: dbRecID
             }
         }
     );
 
    const changedData = await getSingleTenantRec(dbRecID);
 
-    res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
 module.exports = router;
