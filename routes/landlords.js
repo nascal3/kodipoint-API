@@ -163,7 +163,7 @@ const duplicatesKRAExcept = async (info, userID) => {
 router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
     const info = JSON.parse(req.body.data);
-    const userID = req.user.role === 'admin' ? info.user_id : req.user.id;
+    const userID = req.user.role === 'admin' || req.user.role === 'superU' ? info.user_id : req.user.id;
 
     const userData = await Landlords.findOne({
         where: {
