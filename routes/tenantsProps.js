@@ -93,7 +93,7 @@ router.post('/movein', [auth, landlord], async (req, res) => {
     const duplicateEntry = await duplicateMoveInEntry(req.body.property_id, req.body.tenant_id, unitNumber)
     if (duplicateEntry) return res.status(422).json({'Error': 'The entry has already been done!'});
 
-    const propertyNotVacant = await  propertyNotVacant(req.body.property_id, unitNumber)
+    const propertyNotVacant = await propertyNotVacant(req.body.property_id, unitNumber)
     if (propertyNotVacant) return res.status(422).json({'Error': 'This property is not vacant!'});
 
     const userData = await TenantsProps.create({
