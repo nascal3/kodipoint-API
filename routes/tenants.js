@@ -60,26 +60,13 @@ const searchTenant = async (searchPhrase) => {
 
 // ***Function get all tenants of a specific landlord ***
 const getLandlordTenants = async (landlordID) => {
-    // get all property IDs belonging to selected landlord
-    const propertyIDs = await Properties.findAll({
-        attributes: ['id'],
-        where: {
-            landlord_id: landlordID
-        },
-        raw: true
-    });
-    let propertyIdArray = [];
-    propertyIDs.forEach(value => {
-        propertyIdArray.push(value.id)
-    });
-
     // get all tenant IDs still living in selected landlords' properties
     const tenantsIDs = await TenantsProps.findAll({
         attributes: [
             [sequelize.fn('DISTINCT', sequelize.col('tenant_id')), 'tenant_id']
         ],
         where: {
-            property_id: propertyIdArray,
+            landlord_id: landlordID,
             move_out_date: {
                 [Op.is]: null,
             }
@@ -94,7 +81,7 @@ const getLandlordTenants = async (landlordID) => {
     return tenantsIDsArray
 };
 
-// GET ONE TENANT BY ID
+// GET ONE TENANT BY USER ID
 router.get('/single', [auth, tenant], async (req, res) => {
     const ID = req.body.user_id || req.user.id;
     const userData = await getTenant(ID);
@@ -126,8 +113,8 @@ router.get('/landlord', [auth, landlord], async (req, res) => {
     const limit= req.body.limit;
     const offset = req.body.offset;
 
-    const userID = req.user.role === 'admin' ?  0 : req.user.id;
-    const landlordID = await propertyFunctions.mapLandlordID(userID); // get user ID from token in header or request body
+    const userID = req.user.role === 'admin' ?  0 : req.user.id; // get user ID from token in header or request body
+    const landlordID = await propertyFunctions.mapLandlordID(userID);
 
     // get all tenant IDs still living in selected landlords' properties
     const tenantsIDsArray = await getLandlordTenants(landlordID)
@@ -147,8 +134,8 @@ router.get('/landlord', [auth, landlord], async (req, res) => {
 router.post('/landlord/search', [auth, landlord], async (req, res) => {
     const searchPhrase = req.body.search_phrase;
 
-    const userID = req.user.role === 'admin' ? 0 : req.user.id;
-    const landlordID = await propertyFunctions.mapLandlordID(userID); // get user ID from token in header or request body
+    const userID = req.user.role === 'admin' ? 0 : req.user.id; // get user ID from token in header or request body
+    const landlordID = await propertyFunctions.mapLandlordID(userID);
 
     // get all tenant IDs still living in selected landlords' properties
     const tenantsIDsArray = await getLandlordTenants(landlordID)
