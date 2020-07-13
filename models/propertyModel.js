@@ -20,12 +20,24 @@ const propertyModel = connection.define('property', {
         type:Sequelize.STRING(50),
         allowNull: false
     },
+    title_type: {
+        type:Sequelize.STRING(60),
+        allowNull: false
+    },
+    ownership_type: {
+        type:Sequelize.STRING(60),
+        allowNull: false
+    },
     contact_person: {
         type: Sequelize.STRING,
         allowNull: false
     },
     phone: {
         type: Sequelize.STRING,
+        allowNull: true
+    },
+    contact_email: {
+        type: Sequelize.STRING(50),
         allowNull: true
     },
     lr_nos: {

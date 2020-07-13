@@ -193,6 +193,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
     const nationalID = userData.national_id;
     const kraPIN = userData.kra_pin;
     const phone = userData.phone;
+    const postal_address = userData.postal_address;
     const bankName = userData.bank_name;
     const bankBranch = userData.bank_branch;
     const bankACC = userData.bank_acc;
@@ -214,6 +215,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
         national_id: info.national_id || nationalID,
         kra_pin: info.kra_pin || kraPIN,
         phone: info.phone || phone,
+        postal_address: info.postal_address || postal_address,
         bank_name: info.bank_name || bankName,
         bank_branch: info.bank_branch || bankBranch,
         bank_acc: info.bank_acc || bankACC,
