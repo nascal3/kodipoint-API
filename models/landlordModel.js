@@ -40,6 +40,10 @@ const landlordModel = connection.define('landlord', {
         type: Sequelize.STRING(30),
         allowNull: false
     },
+    postal_address: {
+        type: Sequelize.STRING(60),
+        allowNull: true
+    },
     bank_name: {
         type: Sequelize.STRING,
         allowNull: true

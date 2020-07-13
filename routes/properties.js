@@ -151,6 +151,7 @@ router.post('/register', [auth, landlord], async (req, res) => {
     property_name: prop.property_name,
     property_type: prop.property_type,
     contact_person: prop.contact_person,
+    contact_email: prop.contact_email,
     phone: prop.phone,
     lr_nos: prop.lr_nos,
     nos_units: prop.nos_units,
@@ -181,6 +182,7 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   const property_name = propData.property_name;
   const property_type = propData.property_type;
   const contact_person = propData.contact_person;
+  const contact_email = propData.contact_email;
   const phone = propData.phone;
   const lr_nos = propData.lr_nos;
   const nos_units = propData.nos_units;
@@ -206,6 +208,7 @@ router.post('/edit', [auth, landlord], async (req, res) => {
     property_name: prop.property_name || property_name,
     property_type: prop.property_type || property_type,
     contact_person: prop.contact_person || contact_person,
+    contact_email: prop.contact_email || contact_email,
     phone: prop.phone || phone,
     lr_nos: prop.lr_nos || lr_nos,
     nos_units: prop.nos_units || nos_units,

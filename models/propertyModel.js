@@ -28,6 +28,10 @@ const propertyModel = connection.define('property', {
         type: Sequelize.STRING,
         allowNull: true
     },
+    contact_email: {
+        type: Sequelize.STRING(50),
+        allowNull: true
+    },
     lr_nos: {
         type: Sequelize.STRING,
         unique: true,
