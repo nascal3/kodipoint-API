@@ -63,10 +63,15 @@ router.post('/property', [auth], async (req, res) => {
             property_id: property_id,
             move_out_date: null
         },
-        include: {
-            model: Tenant,
-            as: 'tenant'
-        }
+        include: [
+            {
+                model: Tenant,
+                as: 'tenant',
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt', 'updatedBy']
+                }
+            }
+        ]
     });
 
     res.status(200).json({'result': records});
