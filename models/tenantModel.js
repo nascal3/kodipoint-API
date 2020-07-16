@@ -55,14 +55,10 @@ const tenantModel = connection.define('tenant', {
 });
 
 tenantModel.hasMany(tenantPropsModel, {
-    foreignKey: 'tenant_id',
-    sourceKey: 'id'
+    foreignKey: 'tenant_id'
 });
-
 tenantPropsModel.belongsTo(tenantModel, {
-    foreignKey: 'tenant_id',
-    as: 'tenant',
-    targetKey: 'id'
+    foreignKey: 'tenant_id'
 });
 
 module.exports = tenantModel;
