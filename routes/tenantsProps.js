@@ -56,6 +56,9 @@ router.post('/property', [auth], async (req, res) => {
     const property_id = req.body.property_id;
 
     const records = await TenantsProps.findAll({
+        attributes: {
+            exclude: ['createdAt', 'updatedAt', 'edited_by', 'created_by', 'landlord_id', 'landlord_name']
+        },
         order: [
             ['move_in_date', 'DESC']
         ],
