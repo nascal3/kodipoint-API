@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize');
 const connection= require('../startup/db');
-const landlordModel = require('./landlordModel');
 const tenantModel = require('./tenantModel');
 const propertyModel = require('./propertyModel');
 

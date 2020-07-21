@@ -4,10 +4,8 @@ const { Op } = require('sequelize');
 const sequelize = require('sequelize');
 
 const Tenants = require('../models/tenantModel');
-const Properties = require('../models/propertyModel');
 const TenantsProps = require('../models/tenantPropsModel');
 const auth = require('../middleware/auth');
-const admin = require('../middleware/adminAuth');
 const tenant = require('../middleware/tenantAuth');
 const landlord = require('../middleware/landlordAuth');
 

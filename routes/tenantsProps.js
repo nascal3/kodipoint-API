@@ -4,6 +4,7 @@ const Op = Sequelize.Op;
 const router = express.Router();
 
 const TenantsProps = require('../models/tenantPropsModel');
+const Tenant = require('../models/tenantModel');
 const auth = require('../middleware/auth');
 const landlord = require('../middleware/landlordAuth');
 
@@ -46,6 +47,35 @@ router.post('/single', [auth], async (req, res) => {
             }
         });
     }
+
+    res.status(200).json({'result': records});
+});
+
+// GET ALL TENANTS RENTING RECORDS INFO OF A PROPERTY BY PROPERTY ID.
+router.post('/property', [auth], async (req, res) => {
+    const property_id = req.body.property_id;
+
+    const records = await TenantsProps.findAll({
+        attributes: {
+            exclude: ['createdAt', 'updatedAt', 'edited_by', 'created_by', 'landlord_id', 'landlord_name']
+        },
+        order: [
+            ['move_in_date', 'DESC']
+        ],
+        where: {
+            property_id: property_id,
+            move_out_date: null
+        },
+        include: [
+            {
+                model: Tenant,
+                as: 'tenant',
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt', 'updatedBy']
+                }
+            }
+        ]
+    });
 
     res.status(200).json({'result': records});
 });

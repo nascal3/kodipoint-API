@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const connection= require('../startup/db');
 const userModel = require('./userModel');
+const tenantPropsModel = require('./tenantPropsModel');
 
 const tenantModel = connection.define('tenant', {
     id: {
@@ -51,6 +52,13 @@ const tenantModel = connection.define('tenant', {
             fields:["email", "user_id","national_id"]
         }
     ]
+});
+
+tenantModel.hasMany(tenantPropsModel, {
+    foreignKey: 'tenant_id'
+});
+tenantPropsModel.belongsTo(tenantModel, {
+    foreignKey: 'tenant_id'
 });
 
 module.exports = tenantModel;
