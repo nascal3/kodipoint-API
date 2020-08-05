@@ -20,6 +20,11 @@ const serviceModel = connection.define('service', {
         type:Sequelize.INTEGER,
         allowNull: false
     },
+    service_price: {
+        type:Sequelize.INTEGER,
+        defaultValue: 0,
+        allowNull: false
+    }
 },{
     indexes:[
         {

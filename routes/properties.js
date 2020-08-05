@@ -67,7 +67,7 @@ const mapLandlordID = async (user_id) => {
 };
 
 // GET ONE PROPERTY BY ID.
-router.get('/single', [auth, admin], async (req, res) => {
+router.post('/single', [auth, admin], async (req, res) => {
     const propData = await getProperty(req.body.id);
     res.status(200).json({ 'results': propData});
 });
@@ -262,6 +262,19 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   const changedData = await getProperty(prop.id);
 
   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+});
+
+// DELETE PROPERTY SERVICE .
+router.post('/deleteservice', [auth, admin], async (req, res) => {
+  const serviceID= req.body.id;
+
+  const service = await Services.destroy({
+    where: {
+      id: serviceID
+    }
+  });
+
+  res.status(200).json({'result': service});
 });
 
 module.exports = {
