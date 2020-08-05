@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const connection= require('../startup/db');
+const propertyModel = require('./propertyModel');
 
 const serviceModel = connection.define('service', {
     id: {
@@ -11,17 +12,27 @@ const serviceModel = connection.define('service', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    description: {
-        type: Sequelize.TEXT,
-        allowNull: true
-    }
+    property_name: {
+        type:Sequelize.STRING(50),
+        allowNull: false
+    },
+    property_id: {
+        type:Sequelize.INTEGER,
+        allowNull: false
+    },
 },{
     indexes:[
         {
-            unique: true,
-            fields:['service_name']
+            fields:['service_name', 'property_id']
         }
     ]
+});
+
+propertyModel.hasMany(serviceModel, {
+    foreignKey: 'property_id'
+});
+serviceModel.belongsTo(propertyModel, {
+    foreignKey: 'property_id'
 });
 
 module.exports = serviceModel;

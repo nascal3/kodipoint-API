@@ -6,6 +6,7 @@ const Op = Sequelize.Op;
 
 const Properties = require('../models/propertyModel');
 const Landlords = require('../models/landlordModel');
+const Services = require('../models/serviceModel');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
@@ -42,7 +43,16 @@ const getProperty = async (prop_id) => {
     return await Properties.findOne({
         where: {
             id: prop_id
+        },
+        include: [
+        {
+          model: Services,
+          as: 'services',
+          attributes: {
+            exclude: ['createdAt', 'updatedAt']
+          }
         }
+      ]
     });
 };
 
@@ -110,6 +120,15 @@ router.post('/landlord', [auth, landlord], async (req, res) => {
       where: {
           landlord_id: landlordID
       },
+      include: [
+      {
+        model: Services,
+        as: 'services',
+        attributes: {
+          exclude: ['createdAt', 'updatedAt']
+        }
+      }
+    ],
       limit: limit,
       offset: offset
   });
@@ -123,6 +142,15 @@ router.post('/all', [auth, admin], async (req, res) => {
   const offset = req.body.offset;
 
   const properties = await Properties.findAll({
+      include: [
+      {
+        model: Services,
+        as: 'services',
+        attributes: {
+          exclude: ['createdAt', 'updatedAt']
+        }
+      }
+    ],
       limit: limit,
       offset: offset
   });
