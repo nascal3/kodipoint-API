@@ -167,7 +167,7 @@ router.post('/all', [auth, admin], async (req, res) => {
   res.status(200).json({'result': properties});
 });
 
-// REGISTER PROPERTY DETAILS
+// ADD NEW PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
   const prop = JSON.parse(req.body.data);
 
