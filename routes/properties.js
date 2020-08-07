@@ -301,21 +301,25 @@ router.post('/edit', [auth, landlord], async (req, res) => {
   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
 });
 
-// ADD NEW PROPERTY SERVICE .
-router.post('/addservice', [auth, admin], async (req, res) => {
+// EDIT PROPERTY SERVICE PRICE.
+router.post('/editserviceprice', [auth, landlord], async (req, res) => {
   const serviceID= req.body.id;
+  const servicePrice= req.body.service_price;
 
-  const service = await Services.create({
-    where: {
-      id: serviceID
-    }
+  const service = await Services.update({
+    service_price: servicePrice
+  },
+  {
+      where: {
+        id: serviceID
+      }
   });
 
   res.status(200).json({'result': service});
 });
 
 // DELETE PROPERTY SERVICE .
-router.post('/deleteservice', [auth, admin], async (req, res) => {
+router.post('/deleteservice', [auth, landlord], async (req, res) => {
   const serviceID= req.body.id;
 
   const service = await Services.destroy({
