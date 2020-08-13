@@ -33,6 +33,10 @@ const invoiceModel = connection.define('invoice', {
         type: Sequelize.STRING,
         allowNull: false
     },
+    unit_no: {
+        type:Sequelize.STRING(10),
+        allowNull: false
+    },
     date_issued: {
         type:Sequelize.DATE,
         defaultValue: Sequelize.NOW,
@@ -55,10 +59,6 @@ const invoiceModel = connection.define('invoice', {
         type: Sequelize.INTEGER,
         defaultValue: this.amount_owed,
         allowNull: false
-    },
-    unit_no: {
-        type:Sequelize.STRING(10),
-        allowNull: true
     }
 },{
     indexes:[

@@ -6,6 +6,7 @@ const Op = Sequelize.Op;
 
 const Properties = require('../models/propertyModel');
 const Landlords = require('../models/landlordModel');
+const Services = require('../models/serviceModel');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
@@ -42,8 +43,26 @@ const getProperty = async (prop_id) => {
     return await Properties.findOne({
         where: {
             id: prop_id
+        },
+        include: [
+        {
+          model: Services,
+          as: 'services',
+          attributes: {
+            exclude: ['createdAt', 'updatedAt']
+          }
         }
+      ]
     });
+};
+
+// ***Function add single property services***
+const addPropertyService = async (prop_id, prop_name, service_name) => {
+  return await Services.create({
+    property_id: prop_id,
+    property_name: prop_name,
+    service_name: service_name
+  });
 };
 
 // ***Function get/match user ID to landlord_ID***
@@ -57,7 +76,7 @@ const mapLandlordID = async (user_id) => {
 };
 
 // GET ONE PROPERTY BY ID.
-router.get('/single', [auth, admin], async (req, res) => {
+router.post('/single', [auth, admin], async (req, res) => {
     const propData = await getProperty(req.body.id);
     res.status(200).json({ 'results': propData});
 });
@@ -110,6 +129,15 @@ router.post('/landlord', [auth, landlord], async (req, res) => {
       where: {
           landlord_id: landlordID
       },
+      include: [
+      {
+        model: Services,
+        as: 'services',
+        attributes: {
+          exclude: ['createdAt', 'updatedAt']
+        }
+      }
+    ],
       limit: limit,
       offset: offset
   });
@@ -123,6 +151,15 @@ router.post('/all', [auth, admin], async (req, res) => {
   const offset = req.body.offset;
 
   const properties = await Properties.findAll({
+      include: [
+      {
+        model: Services,
+        as: 'services',
+        attributes: {
+          exclude: ['createdAt', 'updatedAt']
+        }
+      }
+    ],
       limit: limit,
       offset: offset
   });
@@ -130,7 +167,7 @@ router.post('/all', [auth, admin], async (req, res) => {
   res.status(200).json({'result': properties});
 });
 
-// REGISTER PROPERTY DETAILS
+// ADD NEW PROPERTY DETAILS
 router.post('/register', [auth, landlord], async (req, res) => {
   const prop = JSON.parse(req.body.data);
 
@@ -165,6 +202,13 @@ router.post('/register', [auth, landlord], async (req, res) => {
     approved: 0,
     updatedBy: req.user.id
   });
+
+  if (prop.property_services) {
+    const servicesArray = prop.property_services.split(',')
+    await Promise.all(servicesArray.map( async (service) => {
+      await addPropertyService(propData.id, prop.property_name, service)
+    }))
+  }
 
   res.status(200).json({'result': propData});
 });
@@ -207,6 +251,15 @@ router.post('/edit', [auth, landlord], async (req, res) => {
     if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
   }
 
+  const appendServices = (newServices) => {
+    const newServicesArray = newServices.split(',')
+    if (!newServicesArray.length) return null
+    const currentServicesArray = property_services.split(',')
+    const newArray = [...currentServicesArray, ...newServicesArray]
+    let unique = [...new Set(newArray)];
+    return  unique.join(',')
+  }
+
   const newData = await Properties.update({
     landlord_id: prop.landlord_id || landlord_id,
     property_name: prop.property_name || property_name,
@@ -219,7 +272,7 @@ router.post('/edit', [auth, landlord], async (req, res) => {
     lr_nos: prop.lr_nos || lr_nos,
     nos_units: prop.nos_units || nos_units,
     description: prop.description || description,
-    property_services: prop.property_services || property_services,
+    property_services: appendServices(prop.property_services) || property_services,
     property_img: uploadPath || property_img,
     property_location: prop.property_location || property_location,
     property_coordinates: prop.property_coordinates || property_coordinates,
@@ -233,7 +286,49 @@ router.post('/edit', [auth, landlord], async (req, res) => {
 
   const changedData = await getProperty(prop.id);
 
+  if (prop.property_services) {
+    const newServicesArray = prop.property_services.split(',')
+    const DBPropertyServicesArray = property_services.split(',')
+    const validatedServicesArray = []
+    newServicesArray.forEach(service => {
+      if (DBPropertyServicesArray.indexOf(service) === -1) return validatedServicesArray.push(service)
+    })
+    await Promise.all(validatedServicesArray.map( async (service) => {
+      await addPropertyService(prop.id, prop.property_name, service)
+    }))
+  }
+
   res.status(200).json({ 'results': changedData, 'success_code': newData[0]});
+});
+
+// EDIT PROPERTY SERVICE PRICE.
+router.post('/editserviceprice', [auth, landlord], async (req, res) => {
+  const serviceID= req.body.id;
+  const servicePrice= req.body.service_price;
+
+  const service = await Services.update({
+    service_price: servicePrice
+  },
+  {
+      where: {
+        id: serviceID
+      }
+  });
+
+  res.status(200).json({'result': service});
+});
+
+// DELETE PROPERTY SERVICE .
+router.post('/deleteservice', [auth, landlord], async (req, res) => {
+  const serviceID= req.body.id;
+
+  const service = await Services.destroy({
+    where: {
+      id: serviceID
+    }
+  });
+
+  res.status(200).json({'result': service});
 });
 
 module.exports = {
