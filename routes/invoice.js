@@ -15,7 +15,7 @@ const TenantProps = require('../models/tenantPropsModel');
 
 
 // GET SPECIFIC TENANT INVOICES (filtered by date issued)
-router.post('/tenant/all', [auth, admin], async (req, res) => {
+router.post('/tenant/all', [auth, landlord], async (req, res) => {
 
     const tenantID = req.body.tenant_id
     const propertyID = req.body.property_id
@@ -107,7 +107,7 @@ const landlordInvoices = async (landlordID, dateFrom, dateTo, limit, offset) => 
 };
 
 // GET INVOICES CREATED BY LANDLORD (filtered by date issued)
-router.post('/landlord/all', [auth, admin], async (req, res) => {
+router.post('/landlord/all', [auth, landlord], async (req, res) => {
 
     const landlordID = req.body.landlord_id;
     const property = 'all' || req.body.property_id;
@@ -133,33 +133,42 @@ const rentAmount = async (tenantID, propertyID, unitNo) => {
             tenant_id: tenantID,
             property_id: propertyID,
             unit_no: unitNo
-        }
+        },
+        raw: true
     })
 };
 
 // CREATE TENANT INVOICES
-router.post('/create', [auth, admin], async (req, res) => {
+router.post('/create', [auth, landlord], async (req, res) => {
 
     const tenantID = req.body.tenant_id;
     const landlordID = req.body.landlord_id;
     const propertyID = req.body.property_id;
     const propertyName = req.body.property_name;
     const unitNo = req.body.unit_no;
+    const rentPeriod = req.body.rent_period;
+    const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
     const loggedUser = req.user.id;
 
-    const unitRent = await rentAmount(tenantID, propertyID, unitNo);
+    const rentInfo = await rentAmount(tenantID, propertyID, unitNo);
+    if (!rentInfo) return res.status(404).json({'Error': 'The following tenant records do not exist!'});
+    const amountBalance = rentInfo.unit_rent - amountPaid;
 
-    const invoices = await Invoices.create({
+    const invoice = await Invoices.create({
         tenant_id: tenantID,
         landlord_id: landlordID,
         property_id: propertyID,
         property_name: propertyName,
         unit_no: unitNo,
+        rent_period: rentPeriod,
+        amount_owed: rentInfo.unit_rent,
+        amount_paid: parseInt(amountPaid),
+        amount_balance: amountBalance,
         date_issued: new Date(),
         createdBy: loggedUser
     });
 
-    res.status(200).json({ 'results': invoices});
+    res.status(200).json({ 'results': invoice});
 });
 
 module.exports = router;

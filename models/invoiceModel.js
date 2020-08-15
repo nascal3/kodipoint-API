@@ -38,6 +38,10 @@ const invoiceModel = connection.define('invoice', {
         type:Sequelize.STRING(10),
         allowNull: false
     },
+    rent_period: {
+        type:Sequelize.DATEONLY,
+        allowNull: false
+    },
     date_issued: {
         type:Sequelize.DATE,
         defaultValue: Sequelize.NOW,
@@ -76,7 +80,7 @@ const invoiceModel = connection.define('invoice', {
             model: userModel,
             key: userModel.id
         },
-        allowNull: false
+        allowNull: true
     },
 },{
     indexes:[
