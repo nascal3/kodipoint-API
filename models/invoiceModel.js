@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const connection = require('../startup/db');
 const tenantModel = require('./tenantModel');
 const propertyModel = require('./propertyModel');
+const userModel = require('./userModel');
 
 const invoiceModel = connection.define('invoice', {
     id: {
@@ -48,6 +49,7 @@ const invoiceModel = connection.define('invoice', {
     },
     amount_owed: {
         type: Sequelize.INTEGER,
+        defaultValue: 0,
         allowNull: false
     },
     amount_paid: {
@@ -57,9 +59,25 @@ const invoiceModel = connection.define('invoice', {
     },
     amount_balance: {
         type: Sequelize.INTEGER,
-        defaultValue: this.amount_owed,
+        defaultValue: 0,
         allowNull: false
-    }
+    },
+    createdBy: {
+        type: Sequelize.INTEGER,
+        references: {
+            model: userModel,
+            key: userModel.id
+        },
+        allowNull: false
+    },
+    updatedBy: {
+        type: Sequelize.INTEGER,
+        references: {
+            model: userModel,
+            key: userModel.id
+        },
+        allowNull: false
+    },
 },{
     indexes:[
         {
