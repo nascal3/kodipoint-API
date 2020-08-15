@@ -138,6 +138,19 @@ const rentAmount = async (tenantID, propertyID, unitNo) => {
     })
 };
 
+//***find if duplicate invoice already exists***
+const checkDuplicateInvoice = async (tenantID, propertyID, unitNo, rentPeriod) => {
+    return await Invoices.findAll({
+        where: {
+            tenant_id: tenantID,
+            property_id: propertyID,
+            unit_no: unitNo,
+            rent_period: rentPeriod
+        },
+        raw: true
+    })
+}
+
 // CREATE TENANT INVOICES
 router.post('/create', [auth, landlord], async (req, res) => {
 
@@ -149,6 +162,9 @@ router.post('/create', [auth, landlord], async (req, res) => {
     const rentPeriod = req.body.rent_period;
     const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
     const loggedUser = req.user.id;
+
+    const duplicateInvoice = await checkDuplicateInvoice(tenantID, propertyID, unitNo, rentPeriod);
+    if (duplicateInvoice) return res.status(422).json({'Error': 'The following invoice already exists!'});
 
     const rentInfo = await rentAmount(tenantID, propertyID, unitNo);
     if (!rentInfo) return res.status(404).json({'Error': 'The following tenant records do not exist!'});
@@ -162,7 +178,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
         unit_no: unitNo,
         rent_period: rentPeriod,
         amount_owed: rentInfo.unit_rent,
-        amount_paid: parseInt(amountPaid),
+        amount_paid: amountPaid,
         amount_balance: amountBalance,
         date_issued: new Date(),
         createdBy: loggedUser
