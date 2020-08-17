@@ -20,7 +20,7 @@ const invbreakModel = connection.define('invoice_breakdown', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    service_cost: {
+    service_price: {
         type: Sequelize.INTEGER,
         allowNull: false
     }

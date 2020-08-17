@@ -8,14 +8,16 @@ const Op = Sequelize.Op;
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
+const tenant = require('../middleware/tenantAuth');
 
 const Invoices = require('../models/invoiceModel');
 const InvBreaks = require('../models/invbreakModel');
 const TenantProps = require('../models/tenantPropsModel');
+const Services = require('../models/serviceModel');
 
 
 // GET SPECIFIC TENANT INVOICES (filtered by date issued)
-router.post('/tenant/all', [auth, landlord], async (req, res) => {
+router.post('/tenant/all', [auth, tenant], async (req, res) => {
 
     const tenantID = req.body.tenant_id
     const propertyID = req.body.property_id
@@ -125,6 +127,26 @@ router.post('/landlord/all', [auth, landlord], async (req, res) => {
     res.status(200).json({ 'results': invoices});
 });
 
+//***find services belonging to a tenants' property unit***
+const tenantPropertyServices = async (propertyID) => {
+    return await Services.findAll({
+        attributes: ['service_name', 'service_price'],
+        where: {
+            property_id: propertyID
+        },
+        raw: true
+    });
+};
+
+//***add services belonging to a tenants' property unit to invoice breakdown***
+const addPropertyServiceBreakdown = async (invoiceID, service) => {
+    await InvBreaks.create({
+        invoice_id: invoiceID,
+        service_name: service.service_name,
+        service_price: service.service_price
+    });
+};
+
 //***find rent amount of tenants' unit***
 const rentAmount = async (tenantID, propertyID, unitNo) => {
     return await TenantProps.findOne({
@@ -164,11 +186,19 @@ router.post('/create', [auth, landlord], async (req, res) => {
     const loggedUser = req.user.id;
 
     const duplicateInvoice = await checkDuplicateInvoice(tenantID, propertyID, unitNo, rentPeriod);
-    if (duplicateInvoice) return res.status(422).json({'Error': 'The following invoice already exists!'});
+    if (duplicateInvoice.length) return res.status(422).json({'Error': 'The following invoice already exists!'});
+
+    let servicesTotal = 0;
+    const propertyServices = await tenantPropertyServices(propertyID);
+    if (propertyServices.length) {
+        propertyServices.forEach( tenantService => {
+            servicesTotal+=tenantService.service_price
+        })
+    }
 
     const rentInfo = await rentAmount(tenantID, propertyID, unitNo);
     if (!rentInfo) return res.status(404).json({'Error': 'The following tenant records do not exist!'});
-    const amountBalance = rentInfo.unit_rent - amountPaid;
+    const amountBalance = (rentInfo.unit_rent + servicesTotal) - amountPaid;
 
     const invoice = await Invoices.create({
         tenant_id: tenantID,
@@ -177,12 +207,54 @@ router.post('/create', [auth, landlord], async (req, res) => {
         property_name: propertyName,
         unit_no: unitNo,
         rent_period: rentPeriod,
-        amount_owed: rentInfo.unit_rent,
+        rent_amount: rentInfo.unit_rent,
+        services_amount: servicesTotal,
+        amount_owed: rentInfo.unit_rent + servicesTotal,
         amount_paid: amountPaid,
         amount_balance: amountBalance,
         date_issued: new Date(),
         createdBy: loggedUser
     });
+
+    if (propertyServices.length) {
+        await Promise.all(propertyServices.map( async (service) => {
+            await addPropertyServiceBreakdown(invoice.id, service)
+        }))
+    }
+
+    res.status(200).json({ 'results': invoice});
+});
+
+// EDIT TENANT INVOICE
+router.post('/edit', [auth, landlord], async (req, res) => {
+
+    const invoiceID = req.body.invoice_id;
+    const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
+    const loggedUser = req.user.id;
+
+    const invoice = await Invoices.findOne({
+        where: {
+            id: invoiceID
+        }
+    });
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
+
+    res.status(200).json({ 'results': invoice});
+});
+
+// ADD INVOICE BREAK DOWN SERVICES
+router.post('/add/service', [auth, landlord], async (req, res) => {
+
+    const invoiceID = req.body.invoice_id;
+    const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
+    const loggedUser = req.user.id;
+
+    const invoice = await Invoices.findOne({
+        where: {
+            id: invoiceID
+        }
+    });
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
 
     res.status(200).json({ 'results': invoice});
 });
