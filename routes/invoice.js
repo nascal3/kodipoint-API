@@ -19,11 +19,11 @@ const Services = require('../models/serviceModel');
 // GET SPECIFIC TENANT INVOICES (filtered by date issued)
 router.post('/tenant/all', [auth, tenant], async (req, res) => {
 
-    const tenantID = req.body.tenant_id
-    const propertyID = req.body.property_id
+    const tenantID = req.body.tenant_id;
+    const propertyID = req.body.property_id;
 
-    const dateFrom = req.body.date_from || new Date()
-    const dateTo = req.body.date_to || sub(new Date(), { months: 2 })
+    const dateFrom = req.body.date_from || sub(new Date(), { months: 2 });
+    const dateTo = req.body.date_to || new Date();
 
     const limit= req.body.limit;
     const offset = req.body.offset;
@@ -114,8 +114,8 @@ router.post('/landlord/all', [auth, landlord], async (req, res) => {
     const landlordID = req.body.landlord_id;
     const property = 'all' || req.body.property_id;
 
-    const dateFrom = req.body.date_from || new Date();
-    const dateTo = req.body.date_to || sub(new Date(), { months: 2 });
+    const dateFrom = req.body.date_from || sub(new Date(), { months: 2 });
+    const dateTo = req.body.date_to || new Date();
 
     const limit= req.body.limit;
     const offset = req.body.offset;
@@ -143,7 +143,7 @@ const checkInvoiceServiceDuplicate = async (invoiceID, service) => {
     return await InvBreaks.findOne({
         where: {
             invoice_id: invoiceID,
-            property_id: service.service_name
+            service_name: service.service_name
         },
         raw: true
     })
@@ -152,13 +152,13 @@ const checkInvoiceServiceDuplicate = async (invoiceID, service) => {
 //***add services belonging to a tenants' property unit to invoice breakdown***
 const addInvoiceServiceBreakdown = async (invoiceID, service) => {
     const duplicateService = await checkInvoiceServiceDuplicate(invoiceID, service);
-    if (duplicateService.length) return;
-
-    return await InvBreaks.create({
-        invoice_id: invoiceID,
-        service_name: service.service_name,
-        service_price: service.service_price
-    });
+    if (!duplicateService) {
+        return await InvBreaks.create({
+            invoice_id: invoiceID,
+            service_name: service.service_name,
+            service_price: service.service_price
+        });
+    }
 };
 
 //***find rent amount of tenants' unit***
@@ -200,7 +200,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
     const loggedUser = req.user.id;
 
     const duplicateInvoice = await checkDuplicateInvoice(tenantID, propertyID, unitNo, rentPeriod);
-    if (duplicateInvoice.length) return res.status(422).json({'Error': 'The following invoice already exists!'});
+    if (duplicateInvoice) return res.status(422).json({'Error': 'The following invoice already exists!'});
 
     let servicesTotal = 0;
     const propertyServices = await tenantPropertyServices(propertyID);
@@ -287,13 +287,14 @@ router.post('/add/service', [auth, landlord], async (req, res) => {
         },
         raw: true
     });
-    if (!invoice.length) return res.status(404).json({'Error': 'The following invoice does not exist!'});
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
 
     const service = {
         'service_name': serviceName,
         'service_price': servicePrice
     }
     const newService = await addInvoiceServiceBreakdown(invoice.id, service)
+    if (!newService) return res.status(422).json({'Error': 'The following service already exists!'});
 
     const servicesTotal = await invoiceBreakdownServices(invoice.id);
     const amountBalance = (invoice.rent_amount + servicesTotal) - invoice.amount_paid;
