@@ -273,7 +273,7 @@ const invoiceBreakdownServices = async (propertyID) => {
     return servicesTotal;
 };
 
-// ADD INVOICE BREAK DOWN SERVICES
+// ADD INVOICE BREAKDOWN SERVICES
 router.post('/add/service', [auth, landlord], async (req, res) => {
 
     const invoiceID = req.body.invoice_id;
