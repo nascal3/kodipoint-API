@@ -161,6 +161,16 @@ const addInvoiceServiceBreakdown = async (invoiceID, service) => {
     }
 };
 
+//***remove services belonging to a tenants' property unit to invoice breakdown***
+const removeInvoiceServiceBreakdown = async (invoiceID, service) => {
+    return await InvBreaks.destroy({
+        where: {
+            invoice_id: invoiceID,
+            service_name: service.service_name,
+        }
+    });
+};
+
 //***find rent amount of tenants' unit***
 const rentAmount = async (tenantID, propertyID, unitNo) => {
     return await TenantProps.findOne({
@@ -238,23 +248,6 @@ router.post('/create', [auth, landlord], async (req, res) => {
     res.status(200).json({ 'results': invoice});
 });
 
-// EDIT TENANT INVOICE
-router.post('/edit', [auth, landlord], async (req, res) => {
-
-    const invoiceID = req.body.invoice_id;
-    const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
-    const loggedUser = req.user.id;
-
-    const invoice = await Invoices.findOne({
-        where: {
-            id: invoiceID
-        }
-    });
-    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
-
-    res.status(200).json({ 'results': invoice});
-});
-
 //***fetch all services breakdown belonging to an invoice***
 const invoiceBreakdownServices = async (propertyID) => {
     const services = await InvBreaks.findAll({
@@ -273,12 +266,13 @@ const invoiceBreakdownServices = async (propertyID) => {
     return servicesTotal;
 };
 
-// ADD INVOICE BREAKDOWN SERVICES
-router.post('/add/service', [auth, landlord], async (req, res) => {
+// EDIT INVOICE BREAKDOWN SERVICES
+router.post('/edit/service', [auth, landlord], async (req, res) => {
 
     const invoiceID = req.body.invoice_id;
     const serviceName = req.body.service_name;
     const servicePrice = req.body.service_price;
+    const operation = req.body.operation;
     const loggedUser = req.user.id;
 
     const invoice = await Invoices.findOne({
@@ -293,8 +287,16 @@ router.post('/add/service', [auth, landlord], async (req, res) => {
         'service_name': serviceName,
         'service_price': servicePrice
     }
-    const newService = await addInvoiceServiceBreakdown(invoice.id, service)
-    if (!newService) return res.status(422).json({'Error': 'The following service already exists!'});
+
+    let newService = null;
+    if (operation === 'add') {
+        newService = await addInvoiceServiceBreakdown(invoice.id, service)
+        if (!newService) return res.status(422).json({'Error': 'The following service already exists!'});
+    } else if ( operation === 'remove') {
+        newService = await removeInvoiceServiceBreakdown(invoice.id, service)
+    } else {
+        return res.status(422).json({'Error': 'Please use value "add" or "remove" for the operation option!'});
+    }
 
     const servicesTotal = await invoiceBreakdownServices(invoice.id);
     const amountBalance = (invoice.rent_amount + servicesTotal) - invoice.amount_paid;
@@ -303,7 +305,8 @@ router.post('/add/service', [auth, landlord], async (req, res) => {
         services_amount: servicesTotal,
         amount_balance: amountBalance,
         amount_owed: invoice.rent_amount + servicesTotal,
-        updatedBy: loggedUser,
+        updatedBy: loggedUser
+    },{
         where: {
             id: invoice.id
         }
