@@ -302,6 +302,7 @@ router.post('/add/service', [auth, landlord], async (req, res) => {
     await Invoices.update({
         services_amount: servicesTotal,
         amount_balance: amountBalance,
+        amount_owed: invoice.rent_amount + servicesTotal,
         updatedBy: loggedUser,
         where: {
             id: invoice.id
