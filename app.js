@@ -22,7 +22,7 @@ let server = null;
         const port = process.env.PORT || 3000 ;
         server = app.listen( port, console.log(`listening to port ${port}`));
 
-        if (!process.env.JWT_SECRET) console.error("JWT key missing in environment");
+        if (!process.env.JWT_SECRET) return console.error("JWT key missing in environment");
         console.log('DB_HOST -->', process.env.DB_HOST);
         console.log('DB_USER -->', process.env.DB_USER);
         console.log('DB_PASSWORD -->', process.env.DB_PASSWORD);
