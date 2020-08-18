@@ -19,7 +19,7 @@ module.exports = async (file, userID, type) => {
     try {
       await fs.promises.mkdir(uploadDirectory, { recursive: true });
     } catch (err) {
-      throw new Error(err);
+      throw (err.message);
     }
   };
 
@@ -29,7 +29,7 @@ module.exports = async (file, userID, type) => {
 
   const movePicture = () => {
     image.mv(uploadPath, (err) => {
-      if (err) throw new Error(err);
+      if (err) throw (err.message);
     });
   };
 

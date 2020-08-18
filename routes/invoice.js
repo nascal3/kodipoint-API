@@ -14,6 +14,7 @@ const Invoices = require('../models/invoiceModel');
 const InvBreaks = require('../models/invbreakModel');
 const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
+require('express-async-errors');
 
 
 // GET SPECIFIC TENANT INVOICES (filtered by date issued)

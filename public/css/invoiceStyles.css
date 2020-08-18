@@ -1,7 +1,7 @@
 body{
     font-family: 'Poppins', sans-serif;
     border-top: 5px solid #E75235;
-    padding: 0 25px 15px 25px;
+    padding: 0 35px 20px 35px;
     background-color: #FFFFFF;
 }
 
@@ -15,6 +15,7 @@ body{
 .company-info {
     display: flex;
     flex-direction: row;
+    margin-top: 10px;
 }
 .company-logo {
     width: 60px;
@@ -71,9 +72,14 @@ body{
     font-size: 24px;
     font-weight: 600;
 }
-
+.property {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
 .tenant-info {
-    margin-top: 25px;
+    margin-top: 15px;
     padding: 20px 0 25px 0;
     border-top: 1px solid #dddddd;
 }

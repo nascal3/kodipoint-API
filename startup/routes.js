@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+
 const users = require('../routes/users');
 const landlords = require('../routes/landlords');
 const tenants = require('../routes/tenants');

@@ -1,0 +1,46 @@
+<!-- invoice.css -->
+<link rel="stylesheet" href="../css/invoiceStyles.css" type="text/css">
+
+<section class="header">
+<!--    company logo and contacts-->
+     <div class="company-info">
+         <div class="company-logo">
+             <img class="logo" src="../img/kodiPoint_logo.png" alt="KodiPoint logo">
+         </div>
+         <div class="company-contacts">
+             <div>KodiPoint</div>
+             <div>(+254) 708 486 139</div>
+             <div>P.O Box: 54679, 00200 Nairobi</div>
+             <div>info@kodipoint.com</div>
+         </div>
+     </div>
+<!--    Invoice details e.g date issued, balance due ...-->
+     <div class="invoice-info">
+         <div>invoice</div>
+         <div><span>Rent period:</span> {{formatDateMonth '2020-09-01'}}</div>
+         <div><span>Due Date:</span> {{formatDate '2020-09-10'}}</div>
+         <div><span>Date Issued:</span> {{formatDate '2020-08-26'}}</div>
+         <div class="invoice-balance">
+             <div>Balance due:</div>
+             <div><span>Ksh</span> {{thousandsSeparator 30000}}</div>
+         </div>
+     </div>
+</section>
+<section class="property">
+    <div class="property-name">
+        Muknas apartments
+    </div>
+</section>
+<section class="tenant-info">
+<!--    tenants contacts-->
+     <div class="tenant-contacts">
+         <div>Bill to:</div>
+         <div>John Doe</div>
+         <div>(+254) 734 123576</div>
+         <div>john@mail.com</div>
+     </div>
+</section>
+<section class="breakdown-table">
+<!--  invoice breakdown table  -->
+  table
+</section>
