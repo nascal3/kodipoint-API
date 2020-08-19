@@ -14,6 +14,7 @@ const Invoices = require('../models/invoiceModel');
 const InvBreaks = require('../models/invbreakModel');
 const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
+const Properties = require('../models/propertyModel');
 require('express-async-errors');
 
 
@@ -185,6 +186,17 @@ const rentAmount = async (tenantID, propertyID, unitNo) => {
     })
 };
 
+//***fetch property name and landlord ID of tenants' unit***
+const propertyInfo = async (propertyID) => {
+    return await Properties.findOne({
+        attributes: ['landlord_id', 'property_name'],
+        where: {
+            id: propertyID
+        },
+        raw: true
+    })
+};
+
 //***find if duplicate invoice already exists***
 const checkDuplicateInvoice = async (tenantID, propertyID, unitNo, rentPeriod) => {
     return await Invoices.findOne({
@@ -200,11 +212,12 @@ const checkDuplicateInvoice = async (tenantID, propertyID, unitNo, rentPeriod) =
 
 // CREATE TENANT INVOICES
 router.post('/create', [auth, landlord], async (req, res) => {
+    const propertyDetails = await propertyInfo(req.body.property_id);
 
     const tenantID = req.body.tenant_id;
-    const landlordID = req.body.landlord_id;
+    const landlordID = propertyDetails.landlord_id;
     const propertyID = req.body.property_id;
-    const propertyName = req.body.property_name;
+    const propertyName = propertyDetails.property_name;
     const unitNo = req.body.unit_no;
     const rentPeriod = req.body.rent_period;
     const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
