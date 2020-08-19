@@ -12,11 +12,22 @@ const tenant = require('../middleware/tenantAuth');
 
 const Invoices = require('../models/invoiceModel');
 const InvBreaks = require('../models/invbreakModel');
+const Tenants = require('../models/tenantModel');
 const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
 const Properties = require('../models/propertyModel');
 require('express-async-errors');
 
+//***fetch a tenants personal details***
+const tenantDetails = async (tenantID) => {
+    return await Tenants.findOne({
+        attributes: ['name', 'email', 'phone'],
+        where: {
+            id: tenantID
+        },
+        raw: true
+    });
+}
 
 // GET SPECIFIC TENANT INVOICES (filtered by date issued)
 router.post('/tenant/all', [auth, tenant], async (req, res) => {
@@ -327,6 +338,40 @@ router.post('/edit/service', [auth, landlord], async (req, res) => {
     });
 
     res.status(200).json({ 'results': newService});
+});
+
+// ISSUE/SEND INVOICE TO TENANT
+router.post('/send', [auth, landlord], async (req, res) => {
+    const invoiceNumber = req.body.invoice_number;
+
+    await Invoices.update({
+      date_issued: new Date()
+    },{
+        where: {
+            id: invoiceNumber
+        }
+    });
+
+    const invoice = await Invoices.findOne({
+        where: {
+            id: req.body.invoice_number
+        },
+        include: [
+            {
+                model: InvBreaks,
+                as: 'invoice_breakdowns',
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            }
+        ]
+    });
+
+    const tenantInfo = await tenantDetails(invoice.tenant_id);
+
+    const invoiceData = {...tenantInfo, ...invoice.dataValues};
+
+    res.status(200).json({ 'results': invoiceData });
 });
 
 module.exports = router;
