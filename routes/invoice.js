@@ -233,6 +233,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
     const propertyName = propertyDetails.property_name;
     const unitNo = req.body.unit_no;
     const rentPeriod = req.body.rent_period;
+    const dateDue = req.body.date_due;
     const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
     const loggedUser = req.user.id;
 
@@ -258,6 +259,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
         property_name: propertyName,
         unit_no: unitNo,
         rent_period: rentPeriod,
+        date_due: dateDue,
         rent_amount: rentInfo.unit_rent,
         services_amount: servicesTotal,
         amount_owed: rentInfo.unit_rent + servicesTotal,
