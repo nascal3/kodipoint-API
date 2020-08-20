@@ -2,7 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const exphbs  = require('express-handlebars');
 const app= express();
-const hbs = exphbs.create() ;
+
+// handlebars helper functions
+const docHelpers = require('./helper/templateValueHelpers')
+const hbs = exphbs.create({
+    helpers: docHelpers
+});
 
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');

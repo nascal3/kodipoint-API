@@ -27,7 +27,7 @@ module.exports = (app) => {
   app.use('/api/tenantsrec', tenantsProps);
   app.use('/api/properties', properties.router);
   app.use('/api/invoice', invoice);
-  app.use('/docs', documents);
+  app.use('/docs', documents.router);
   app.use(express.static('public'));
   app.use('/file', express.static(path.join(__dirname, '..' +'/uploads')));
 };

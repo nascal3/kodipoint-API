@@ -95,3 +95,14 @@ body{
     font-size: 15px;
     font-weight: 600;
 }
+.tenant-contacts div:last-child span{
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 300;
+}
+.tenant-contacts div:last-child {
+    margin-top: 5px;
+    text-transform: capitalize;
+    font-size: 13px;
+    font-weight: 600;
+}

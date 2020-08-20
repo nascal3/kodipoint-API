@@ -2,37 +2,19 @@ const path = require("path");
 const express = require('express');
 const router = express.Router();
 const puppeteer = require('puppeteer');
-
-const { format, parseISO } = require('date-fns');
 const appRoot = path.join(__dirname, '..' +'/uploads');
 require('express-async-errors');
 
-const helpers = {
-    formatDate: function(value) {
-        if (!value) return;
-        return format(parseISO(value), 'MMM, d yyyy');
-    },
-
-    formatDateMonth: function(value) {
-        if (!value) return;
-        return format(parseISO(value), 'MMM yyyy');
-    },
-
-    thousandsSeparator: function(value) {
-        if (!value && (value !== 0)) return;
-        return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
+let invoiceData = null;
+const setInvoiceData = (data) => {
+    invoiceData = data;
 }
 
-const createInvoice = async () => {
-    await generateInvoice();
-}
-
-/* invoice template page */
+/* invoice template page path */
 router.get('/invoice', async (req, res) => {
-    res.render('invoiceTemplate', {
-        helpers: helpers
-    });
+    const jsonData = JSON.parse(invoiceData);
+    console.log('>>>>', jsonData);
+    res.render('invoiceTemplate', jsonData);
 });
 
 router.get('/create', async (req, res) => {
@@ -57,4 +39,7 @@ const generateInvoice = async () => {
     await browser.close();
 }
 
-module.exports = router;
+module.exports = {
+    router: router,
+    setInvoiceData: setInvoiceData
+};

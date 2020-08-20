@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const http = require('http');
 const { sub } = require('date-fns');
 
 const Sequelize = require('sequelize');
@@ -16,6 +17,7 @@ const Tenants = require('../models/tenantModel');
 const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
 const Properties = require('../models/propertyModel');
+const documents = require('../routes/documents')
 require('express-async-errors');
 
 //***fetch a tenants personal details***
@@ -370,6 +372,25 @@ router.post('/send', [auth, landlord], async (req, res) => {
     const tenantInfo = await tenantDetails(invoice.tenant_id);
 
     const invoiceData = {...tenantInfo, ...invoice.dataValues};
+    documents.setInvoiceData(JSON.stringify(invoiceData))
+
+    const options = {
+        port: 3000,
+        path: `/docs/invoice`,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            "Access-Control-Allow-Origin": "*"
+        }
+    };
+    const request = http.request( options, (res) => {
+        res.setEncoding('utf8');
+        console.log('Status Code:', res.statusCode);
+    });
+    request.on('error', (err) => {
+        console.error('problem with request: ' + err.message);
+    });
+    request.end();
 
     res.status(200).json({ 'results': invoiceData });
 });
