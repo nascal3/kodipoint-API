@@ -24,13 +24,14 @@ const generateInvoicePDF = async (url) => {
         waitUntil: "networkidle2"
     });
     const pdf = await page.pdf({
-        path: `${appRoot}/invoice.pdf`,
-        format: "A4",
+        // path: `${appRoot}/invoice.pdf`,
+        format: 'A4',
         printBackground: true
     });
     await page.emulateMediaType('screen');
     console.log('>>> created invoice document');
     await browser.close();
+    return pdf;
 }
 
 module.exports = {
