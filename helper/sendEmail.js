@@ -5,8 +5,8 @@ class Email {
         const transporter = nodemailer.createTransport({
             host: 'kodipoint.com',
             port: 587,
-            // secureConnection: true, // Used for Office 365
-            // tls: { ciphers: 'SSLv3' }, // Used for Office 365
+            secure: false,
+            tls: { rejectUnauthorized: false },
             auth: {
                 user: 'info@kodipoint.com', // Update username
                 pass: '2cx591lTHr' // Update password
@@ -25,11 +25,8 @@ class Email {
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                return console.log(error);
-            }
-
-            console.log('Message sent: %s', info.messageId);
+            if (error) return console.error(error);
+            console.log('>>> Message sent: %s', info.messageId);
         });
     }
 }

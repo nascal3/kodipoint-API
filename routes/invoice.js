@@ -407,9 +407,9 @@ router.post('/send', [auth, landlord], async (req, res) => {
 
     Email.sendEmail(
         'nascal3@gmail.com',
-        `Hi ${tenantInfo.name} here is you rental invoice.`,
-        'Find the invoice attached to this email.',
-        'invoice.pdf',
+        'Tenant monthly rental invoice.',
+        `Hi ${tenantInfo.name} here is your rental invoice.`,
+        'Rent Invoice.pdf',
         invoicePDF
     );
 

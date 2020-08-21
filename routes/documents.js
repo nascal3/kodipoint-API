@@ -2,7 +2,6 @@ const path = require("path");
 const express = require('express');
 const router = express.Router();
 const puppeteer = require('puppeteer');
-const appRoot = path.join(__dirname, '..' +'/uploads');
 require('express-async-errors');
 
 let invoiceData = null;
@@ -24,7 +23,7 @@ const generateInvoicePDF = async (url) => {
         waitUntil: "networkidle2"
     });
     const pdf = await page.pdf({
-        // path: `${appRoot}/invoice.pdf`,
+        // path: `uploads/invoice.pdf`,
         format: 'A4',
         printBackground: true
     });
