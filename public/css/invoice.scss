@@ -137,6 +137,11 @@ body{
 .breakdown-table {
   position: relative;
 
+  .total-divider {
+    margin: 0;
+    border-bottom: 3px solid #E75235;
+  }
+
   table {
     border-collapse: collapse;
     width: 100%;
@@ -185,10 +190,6 @@ body{
             border-right: none;
             text-align: right;
           }
-        }
-
-        &:last-child {
-          border-bottom: 3px solid #E75235;
         }
       }
     }

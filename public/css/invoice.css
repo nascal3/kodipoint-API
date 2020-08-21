@@ -122,6 +122,10 @@ body {
 .breakdown-table {
   position: relative;
 }
+.breakdown-table .total-divider {
+  margin: 0;
+  border-bottom: 3px solid #E75235;
+}
 .breakdown-table table {
   border-collapse: collapse;
   width: 100%;
@@ -161,9 +165,6 @@ body {
   width: 40%;
   border-right: none;
   text-align: right;
-}
-.breakdown-table table.services-cost tr:last-child {
-  border-bottom: 3px solid #E75235;
 }
 .breakdown-table table.total-cost {
   position: absolute;
