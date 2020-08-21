@@ -13,20 +13,14 @@ const setInvoiceData = (data) => {
 /* invoice template page path */
 router.get('/invoice', async (req, res) => {
     const jsonData = JSON.parse(invoiceData);
-    console.log('>>>>', jsonData);
     res.render('invoiceTemplate', jsonData);
 });
 
-router.get('/create', async (req, res) => {
-    await generateInvoice();
-    res.send('done');
-});
-
-const generateInvoice = async () => {
+const generateInvoicePDF = async (url) => {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage()
 
-    await page.goto('http://localhost:3000/docs/invoice', {
+    await page.goto(url, {
         waitUntil: "networkidle2"
     });
     const pdf = await page.pdf({
@@ -35,11 +29,12 @@ const generateInvoice = async () => {
         printBackground: true
     });
     await page.emulateMediaType('screen');
-    console.log('>>> created document');
+    console.log('>>> created invoice document');
     await browser.close();
 }
 
 module.exports = {
     router: router,
-    setInvoiceData: setInvoiceData
+    setInvoiceData: setInvoiceData,
+    generateInvoicePDF: generateInvoicePDF
 };

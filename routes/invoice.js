@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const url = require('url');
 const http = require('http');
 const { sub } = require('date-fns');
 
@@ -344,7 +345,7 @@ router.post('/edit/service', [auth, landlord], async (req, res) => {
     res.status(200).json({ 'results': newService});
 });
 
-// ISSUE/SEND INVOICE TO TENANT
+// GENERATE INVOICE PDF & SEND TO TENANT
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
 
@@ -376,6 +377,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceData = {...tenantInfo, ...invoice.dataValues};
     documents.setInvoiceData(JSON.stringify(invoiceData))
 
+    // add tenant data to invoice template
     const options = {
         port: 3000,
         path: `/docs/invoice`,
@@ -393,6 +395,14 @@ router.post('/send', [auth, landlord], async (req, res) => {
         console.error('problem with request: ' + err.message);
     });
     request.end();
+
+    // generate invoice PDF
+    const link = url.format({
+        protocol: req.protocol,
+        host: req.get('host'),
+        pathname: '/docs/invoice'
+    });
+    await documents.generateInvoicePDF(link)
 
     res.status(200).json({ 'results': invoiceData });
 });
