@@ -17,6 +17,7 @@
 <!--    Invoice details e.g date issued, balance due ...-->
      <div class="invoice-info">
          <div>invoice</div>
+         <div><span>Invoice #:</span> {{id}}</div>
          <div><span>Rent period:</span> {{formatDateMonth rent_period}}</div>
          <div><span>Due Date:</span> {{formatDate date_due}}</div>
          <div><span>Date Issued:</span> {{formatDate date_issued}}</div>
@@ -43,5 +44,42 @@
 </section>
 <section class="breakdown-table">
 <!--  invoice breakdown table  -->
-  table
+    <table class="rent-cost">
+        <tr>
+            <th>Item</th>
+            <th>Cost</th>
+        </tr>
+        <tr>
+            <td>Rent</td>
+            <td>{{thousandsSeparator rent_amount}}</td>
+        </tr>
+    </table>
+
+    <table class="services-cost">
+        {{#each invoice_breakdowns}}
+            <tr>
+                <td>{{this.service_name}}</td>
+                <td>{{thousandsSeparator this.service_price}}</td>
+            </tr>
+        {{/each}}
+    </table>
+
+    <table class="total-cost">
+        <tr>
+            <td>Sub total:</td>
+            <td>{{thousandsSeparator amount_owed}}</td>
+        </tr>
+        <tr>
+            <td>Amount paid/carried forward:</td>
+            <td>{{thousandsSeparator amount_paid}}</td>
+        </tr>
+        <tr>
+            <td>Total due:</td>
+            <td>{{thousandsSeparator amount_balance}}</td>
+        </tr>
+    </table>
 </section>
+
+<footer>
+    <span>If you have any questions concerning this invoice please contact us.</span>
+</footer>

@@ -1,7 +1,7 @@
 body {
   font-family: "Poppins", sans-serif;
   border-top: 5px solid #E75235;
-  padding: 0 35px 20px 35px;
+  padding: 0 35px;
   background-color: #FFFFFF;
 }
 
@@ -46,6 +46,13 @@ body {
   font-size: 35px;
   font-weight: 600;
 }
+.invoice-info div:nth-child(2) {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+.invoice-info div:nth-child(2) span {
+  font-size: 16px;
+}
 .invoice-info div {
   font-size: 12px;
   font-weight: 300;
@@ -85,32 +92,119 @@ body {
 
 .tenant-info {
   margin-top: 15px;
-  padding: 20px 0 25px 0;
+  padding: 20px 0 10px 0;
   border-top: 1px solid #dddddd;
 }
-
-.tenant-contacts div:first-child {
+.tenant-info .tenant-contacts div:first-child {
   text-transform: uppercase;
 }
-.tenant-contacts div {
+.tenant-info .tenant-contacts div {
   font-size: 12px;
   font-weight: 300;
   margin-bottom: 3px;
 }
-.tenant-contacts div:nth-child(2) {
+.tenant-info .tenant-contacts div:nth-child(2) {
   font-size: 15px;
   font-weight: 600;
 }
-.tenant-contacts div:last-child {
+.tenant-info .tenant-contacts div:last-child {
   margin-top: 5px;
   text-transform: capitalize;
   font-size: 13px;
   font-weight: 600;
 }
-.tenant-contacts div:last-child span {
+.tenant-info .tenant-contacts div:last-child span {
   text-transform: uppercase;
   font-size: 12px;
   font-weight: 300;
+}
+
+.breakdown-table {
+  position: relative;
+}
+.breakdown-table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.breakdown-table table.rent-cost tr th {
+  text-align: left;
+  font-size: 18px;
+  text-transform: uppercase;
+  padding: 5px 20px 5px 20px;
+  border-bottom: 1px solid #dddddd;
+  background-color: #E75235;
+  color: #FFFFFF;
+  width: 60%;
+}
+.breakdown-table table.rent-cost tr th:last-child {
+  text-align: center;
+}
+.breakdown-table table.rent-cost tr td {
+  width: 40%;
+  padding: 5px 20px 5px 20px;
+  text-transform: capitalize;
+  border-right: 1px solid #dddddd;
+}
+.breakdown-table table.rent-cost tr td:last-child {
+  border-right: none;
+  text-align: right;
+}
+.breakdown-table table.services-cost tr td {
+  padding: 5px 20px 5px 20px;
+  text-transform: capitalize;
+  border-right: 1px solid #dddddd;
+}
+.breakdown-table table.services-cost tr td:first-child {
+  width: 60%;
+}
+.breakdown-table table.services-cost tr td:last-child {
+  width: 40%;
+  border-right: none;
+  text-align: right;
+}
+.breakdown-table table.services-cost tr:last-child {
+  border-bottom: 3px solid #E75235;
+}
+.breakdown-table table.total-cost {
+  position: absolute;
+  right: 0;
+  width: 40%;
+}
+.breakdown-table table.total-cost tr td {
+  padding: 15px 20px;
+  text-transform: capitalize;
+  border-right: 1px solid #dddddd;
+}
+.breakdown-table table.total-cost tr td:first-child {
+  font-weight: 500;
+  width: 60%;
+}
+.breakdown-table table.total-cost tr td:last-child {
+  width: 40%;
+  border-right: none;
+  text-align: right;
+}
+.breakdown-table table.total-cost tr:nth-child(2) {
+  border-bottom: 3px solid #E75235;
+}
+.breakdown-table table.total-cost tr:last-child {
+  background-color: #FFFFFF;
+  font-weight: 600;
+}
+.breakdown-table table tr:nth-child(even) {
+  background-color: #F5F5F5;
+}
+
+footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  color: #FFFFFF;
+  width: 100%;
+  background-color: #E75235;
+  text-align: center;
+  padding: 5px;
+  font-size: 10px;
 }
 
 /*# sourceMappingURL=invoice.css.map */
