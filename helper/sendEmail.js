@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 class Email {
     static sendEmail(to, subject, text, filename, fileContent) {
@@ -8,8 +9,8 @@ class Email {
             secure: false,
             tls: { rejectUnauthorized: false },
             auth: {
-                user: 'info@kodipoint.com', // Update username
-                pass: '2cx591lTHr' // Update password
+                user: 'info@kodipoint.com',
+                pass: process.env.EMAIL_SECRET
             }
         });
 
