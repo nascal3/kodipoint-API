@@ -406,7 +406,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
     const invoicePDF = await documents.generateInvoicePDF(link)
 
     Email.sendEmail(
-        'nascal3@gmail.com',
+        tenantInfo.email,
         'Tenant monthly rental invoice.',
         `Hi ${tenantInfo.name} here is your rental invoice.`,
         'Rent Invoice.pdf',
