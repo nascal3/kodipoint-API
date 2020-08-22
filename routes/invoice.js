@@ -19,7 +19,7 @@ const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
 const Properties = require('../models/propertyModel');
 const documents = require('../routes/documents');
-const Email = require('../helper/sendEmail');
+const sendEmail = require('../helper/sendEmail');
 require('express-async-errors');
 
 //***fetch a tenants personal details***
@@ -405,7 +405,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
     });
     const invoicePDF = await documents.generateInvoicePDF(link)
 
-    Email.sendEmail(
+    const response =  await sendEmail(
         tenantInfo.email,
         'Tenant monthly rental invoice.',
         `Hi ${tenantInfo.name} here is your rental invoice.`,
@@ -413,7 +413,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
         invoicePDF
     );
 
-    res.status(200).json({ 'results': invoiceData });
+    res.status(200).json({ 'results': response });
 });
 
 module.exports = router;
