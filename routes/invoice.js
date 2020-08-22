@@ -8,7 +8,6 @@ const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 
 const auth = require('../middleware/auth');
-const admin = require('../middleware/adminAuth');
 const landlord = require('../middleware/landlordAuth');
 const tenant = require('../middleware/tenantAuth');
 
@@ -347,7 +346,7 @@ router.post('/edit/service', [auth, landlord], async (req, res) => {
 });
 
 // FETCH SINGLE INVOICE DETAILS
-router.get('/single/:invoice_id', [auth, landlord], async (req, res) => {
+router.get('/single/:invoice_id', [auth, tenant], async (req, res) => {
 
     const invoice = await Invoices.findOne({
         where: {
