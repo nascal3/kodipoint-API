@@ -346,6 +346,31 @@ router.post('/edit/service', [auth, landlord], async (req, res) => {
     res.status(200).json({ 'results': newService});
 });
 
+// FETCH SINGLE INVOICE DETAILS
+router.get('/single/:invoice_id', [auth, landlord], async (req, res) => {
+
+    const invoice = await Invoices.findOne({
+        where: {
+            id: req.params.invoice_id
+        },
+        include: [
+            {
+                model: InvBreaks,
+                as: 'invoice_breakdowns',
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            }
+        ]
+    });
+
+    const tenantInfo = await tenantDetails(invoice.tenant_id);
+
+    const invoiceData = {...tenantInfo, ...invoice.dataValues};
+
+    res.status(200).json({ 'results': invoiceData });
+});
+
 // GENERATE INVOICE PDF & SEND TO TENANT
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
