@@ -1,9 +1,9 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-
 const sendEmail = async (to, subject, text, filename, fileContent) => {
     const transporter = nodemailer.createTransport({
+        pool: true,
         host: 'kodipoint.com',
         port: 587,
         secure: false,
