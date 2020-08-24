@@ -48,7 +48,7 @@ const invoiceModel = connection.define('invoice', {
     },
     date_due: {
         type:Sequelize.DATE,
-        allowNull: true
+        allowNull: false
     },
     date_paid: {
         type: Sequelize.DATE,
