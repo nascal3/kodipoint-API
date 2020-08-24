@@ -347,6 +347,7 @@ router.get('/single/:invoice_id', [auth, tenant], async (req, res) => {
             }
         ]
     });
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
 
     const tenantInfo = await tenantDetails(invoice.tenant_id);
 
