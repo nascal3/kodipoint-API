@@ -74,7 +74,6 @@ const invoiceModel = connection.define('invoice', {
     },
     amount_balance: {
         type: Sequelize.INTEGER,
-        defaultValue: 0,
         allowNull: false
     },
     createdBy: {

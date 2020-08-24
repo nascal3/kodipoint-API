@@ -41,9 +41,6 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
     const dateFrom = req.body.date_from || sub(new Date(), { months: 2 });
     const dateTo = req.body.date_to || new Date();
 
-    const limit= req.body.limit;
-    const offset = req.body.offset;
-
     const invoices = await Invoices.findAll({
         order: [
             ['date_issued', 'DESC']
@@ -51,7 +48,7 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
         where: {
             tenant_id: tenantID,
             property_id: propertyID,
-            date_issued: {
+            rent_period: {
                 [Op.between]: [dateFrom, dateTo]
             }
         },
@@ -63,9 +60,7 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
                     exclude: ['createdAt', 'updatedAt']
                 }
             }
-        ],
-        limit: limit,
-        offset: offset
+        ]
     });
 
     res.status(200).json({ 'results': invoices});
@@ -80,7 +75,7 @@ const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo
         where: {
             landlord_id: landlordID,
             property_id: propertyID,
-            date_issued: {
+            rent_period: {
                 [Op.between]: [dateFrom, dateTo]
             }
         },
@@ -92,9 +87,7 @@ const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo
                     exclude: ['createdAt', 'updatedAt']
                 }
             }
-        ],
-        limit: limit,
-        offset: offset
+        ]
     });
 };
 
@@ -106,7 +99,7 @@ const landlordInvoices = async (landlordID, dateFrom, dateTo, limit, offset) => 
         ],
         where: {
             landlord_id: landlordID,
-            date_issued: {
+            rent_period: {
                 [Op.between]: [dateFrom, dateTo]
             }
         },
@@ -118,9 +111,7 @@ const landlordInvoices = async (landlordID, dateFrom, dateTo, limit, offset) => 
                     exclude: ['createdAt', 'updatedAt']
                 }
             }
-        ],
-        limit: limit,
-        offset: offset
+        ]
     });
 };
 
@@ -133,12 +124,9 @@ router.post('/landlord/all', [auth, landlord], async (req, res) => {
     const dateFrom = req.body.date_from || sub(new Date(), { months: 2 });
     const dateTo = req.body.date_to || new Date();
 
-    const limit= req.body.limit;
-    const offset = req.body.offset;
-
     const invoices = property === 'all'
-        ? await landlordInvoices(landlordID, dateFrom, dateTo, limit, offset)
-        : await landlordPropertyInvoices(landlordID, property, dateFrom, dateTo, limit, offset);
+        ? await landlordInvoices(landlordID, dateFrom, dateTo)
+        : await landlordPropertyInvoices(landlordID, property, dateFrom, dateTo);
 
     res.status(200).json({ 'results': invoices});
 });
