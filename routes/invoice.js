@@ -36,18 +36,15 @@ const tenantDetails = async (tenantID) => {
 router.post('/tenant/all', [auth, tenant], async (req, res) => {
 
     const tenantID = req.body.tenant_id;
-    const propertyID = req.body.property_id;
-
     const dateFrom = req.body.date_from || sub(new Date(), { months: 2 });
     const dateTo = req.body.date_to || new Date();
 
     const invoices = await Invoices.findAll({
         order: [
-            ['date_issued', 'DESC']
+            ['rent_period', 'DESC']
         ],
         where: {
             tenant_id: tenantID,
-            property_id: propertyID,
             rent_period: {
                 [Op.between]: [dateFrom, dateTo]
             }
@@ -70,7 +67,7 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
 const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo, limit, offset) => {
     return await Invoices.findAll({
         order: [
-            ['date_issued', 'DESC']
+            ['rent_period', 'DESC']
         ],
         where: {
             landlord_id: landlordID,
@@ -95,7 +92,7 @@ const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo
 const landlordInvoices = async (landlordID, dateFrom, dateTo, limit, offset) => {
     return await Invoices.findAll({
         order: [
-            ['date_issued', 'DESC']
+            ['rent_period', 'DESC']
         ],
         where: {
             landlord_id: landlordID,
