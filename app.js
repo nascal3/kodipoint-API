@@ -1,6 +1,16 @@
 require('dotenv').config();
 const express = require('express');
+const exphbs  = require('express-handlebars');
 const app= express();
+
+// handlebars helper functions
+const docHelpers = require('./helper/templateValueHelpers')
+const hbs = exphbs.create({
+    helpers: docHelpers
+});
+
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
 
 // CALL TO DB CONNECTION FOLDER
 const sequelize = require('./startup/db');
@@ -22,7 +32,7 @@ let server = null;
         const port = process.env.PORT || 3000 ;
         server = app.listen( port, console.log(`listening to port ${port}`));
 
-        if (!process.env.JWT_SECRET) console.error("JWT key missing in environment");
+        if (!process.env.JWT_SECRET) return console.error("JWT key missing in environment");
         console.log('DB_HOST -->', process.env.DB_HOST);
         console.log('DB_USER -->', process.env.DB_USER);
         console.log('DB_PASSWORD -->', process.env.DB_PASSWORD);

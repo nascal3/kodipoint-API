@@ -1,10 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+
 const users = require('../routes/users');
 const landlords = require('../routes/landlords');
 const tenants = require('../routes/tenants');
 const tenantsProps = require('../routes/tenantsProps');
 const properties = require('../routes/properties');
+const invoice = require('../routes/invoice');
+const documents = require('../routes/documents');
 const path = require('path');
 const fileUpload = require('express-fileupload');
 
@@ -23,6 +26,8 @@ module.exports = (app) => {
   app.use('/api/tenants', tenants);
   app.use('/api/tenantsrec', tenantsProps);
   app.use('/api/properties', properties.router);
+  app.use('/api/invoice', invoice);
+  app.use('/docs', documents.router);
   app.use(express.static('public'));
   app.use('/file', express.static(path.join(__dirname, '..' +'/uploads')));
 };

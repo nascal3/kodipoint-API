@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
 const connection = require('../startup/db');
 const invoiceModel = require('./invoiceModel');
-const serviceModel = require('./serviceModel');
 
 const invbreakModel = connection.define('invoice_breakdown', {
     id: {
@@ -17,33 +16,27 @@ const invbreakModel = connection.define('invoice_breakdown', {
         },
         allowNull: false
     },
-    service_id: {
-        type: Sequelize.INTEGER,
-        references: {
-            model: serviceModel,
-            key: serviceModel.id
-        },
-        allowNull: false
-    },
     service_name: {
         type: Sequelize.STRING,
-        references: {
-            model: serviceModel,
-            key: 'service_name'
-        },
         allowNull: false
     },
-    service_cost: {
+    service_price: {
         type: Sequelize.INTEGER,
         allowNull: false
     }
 },{
     indexes:[
         {
-            unique: true,
-            fields:['service_id','service_name']
+            fields:['service_name']
         }
     ]
+});
+
+invoiceModel.hasMany(invbreakModel, {
+    foreignKey: 'invoice_id'
+});
+invbreakModel.belongsTo(invoiceModel, {
+    foreignKey: 'invoice_id'
 });
 
 module.exports = invbreakModel;

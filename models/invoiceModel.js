@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const connection = require('../startup/db');
 const tenantModel = require('./tenantModel');
 const propertyModel = require('./propertyModel');
+const userModel = require('./userModel');
 
 const invoiceModel = connection.define('invoice', {
     id: {
@@ -37,17 +38,33 @@ const invoiceModel = connection.define('invoice', {
         type:Sequelize.STRING(10),
         allowNull: false
     },
+    rent_period: {
+        type:Sequelize.DATEONLY,
+        allowNull: false
+    },
     date_issued: {
         type:Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        allowNull: true
+    },
+    date_due: {
+        type:Sequelize.DATE,
         allowNull: false
     },
     date_paid: {
         type: Sequelize.DATE,
         allowNull: true
     },
+    rent_amount: {
+        type:Sequelize.INTEGER,
+        allowNull: false
+    },
+    services_amount: {
+        type:Sequelize.INTEGER,
+        allowNull: false
+    },
     amount_owed: {
         type: Sequelize.INTEGER,
+        defaultValue: 0,
         allowNull: false
     },
     amount_paid: {
@@ -57,9 +74,24 @@ const invoiceModel = connection.define('invoice', {
     },
     amount_balance: {
         type: Sequelize.INTEGER,
-        defaultValue: this.amount_owed,
         allowNull: false
-    }
+    },
+    createdBy: {
+        type: Sequelize.INTEGER,
+        references: {
+            model: userModel,
+            key: userModel.id
+        },
+        allowNull: false
+    },
+    updatedBy: {
+        type: Sequelize.INTEGER,
+        references: {
+            model: userModel,
+            key: userModel.id
+        },
+        allowNull: true
+    },
 },{
     indexes:[
         {
