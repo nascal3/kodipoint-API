@@ -1,4 +1,3 @@
-const path = require("path");
 const express = require('express');
 const router = express.Router();
 const puppeteer = require('puppeteer');
@@ -16,21 +15,35 @@ router.get('/invoice', async (req, res) => {
 });
 
 const generateInvoicePDF = async (url) => {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage()
+    const browser = await puppeteer.launch({
+        headless: true,
+        executablePath: '/usr/bin/chromium-browser',
+        args: [
+            '--no-sandbox',
+            '--disable-gpu',
+            '--disable-dev-shm-usage'
+        ]
+    });
 
-    await page.goto(url, {
-        waitUntil: "networkidle2"
-    });
-    const pdf = await page.pdf({
-        // path: `uploads/invoice.pdf`,
-        format: 'A4',
-        printBackground: true
-    });
-    await page.emulateMediaType('screen');
-    console.log('>>> created invoice document');
-    await browser.close();
-    return pdf;
+    try {
+        const page = await browser.newPage()
+
+        await page.goto(url, {
+            waitUntil: "networkidle2"
+        });
+
+        const pdf = await page.pdf({
+            // path: `uploads/invoice.pdf`,
+            format: 'A4',
+            printBackground: true
+        });
+        await page.emulateMediaType('screen');
+        console.log('>>> created invoice document');
+        await browser.close();
+        return pdf;
+    } catch (err) {
+        throw err
+    }
 }
 
 module.exports = {

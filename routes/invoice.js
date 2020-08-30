@@ -383,6 +383,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
         ]
     });
 
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
     const tenantInfo = await tenantDetails(invoice.tenant_id);
 
     const invoiceData = {...tenantInfo, ...invoice.dataValues};
@@ -410,7 +411,8 @@ router.post('/send', [auth, landlord], async (req, res) => {
     // generate invoice PDF
     const link = url.format({
         protocol: req.protocol,
-        host: req.get('host'),
+        // host: req.get('host'),
+        host: 'localhost:3000',
         pathname: '/docs/invoice'
     });
     const invoicePDF = await documents.generateInvoicePDF(link)

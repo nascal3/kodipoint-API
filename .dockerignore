@@ -1,0 +1,14 @@
+# IntelliJ project files
+.idea
+*.iml
+in
+out
+gen
+logs
+
+# Project development files
+node_modules
+.git
+.git-crypt
+npm-debug
+docker-compose*.yml
