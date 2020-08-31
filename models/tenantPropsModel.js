@@ -11,10 +11,6 @@ const tenantPropsModel = connection.define('tenant_property', {
     },
     tenant_id: {
         type: Sequelize.INTEGER,
-        references: {
-            model: tenantModel,
-            key: tenantModel.id
-        },
         allowNull: false
     },
     property_id: {
