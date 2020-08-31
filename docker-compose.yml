@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  dev:
+    restart: always
+    build:
+      context: .
+      dockerfile: dockerfile.dev
+    ports:
+    - '81:3000'
+    expose:
+      - '81'
+    volumes:
+    - /app/node_modules
+    - .:/app
+    environment:
+      - DB_HOST=192.168.100.5
+      - DB_USER=root
+      - DB_PASSWORD=
+      - DB_NAME=kodipoint_test
+      - JWT_SECRET=4aNPz7Er243
+      - EMAIL_SECRET=2cx591lTHr
+    command: ["nodemon", "app.js"]
+
+  web:
+    restart: always
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+    - '80:3000'
+    environment:
+      - DB_HOST=192.168.99.100
+      - DB_USER=root
+      - DB_PASSWORD=P@$$w0rd
+      - DB_NAME=kodipoint_test
+      - JWT_SECRET=12345qwerty
+      - EMAIL_SECRET=2cx591lTHr

@@ -186,7 +186,12 @@ body {
   text-align: right;
 }
 .breakdown-table table.total-cost tr:nth-child(2) {
+  border-top: 1px solid #000000;
   border-bottom: 3px solid #E75235;
+}
+.breakdown-table table.total-cost tr:nth-child(2) td:first-child {
+  color: #59B61C;
+  font-weight: 400;
 }
 .breakdown-table table.total-cost tr:last-child {
   background-color: #FFFFFF;
