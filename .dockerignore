@@ -1,5 +1,6 @@
 # IntelliJ project files
 .idea
+.directory
 *.iml
 in
 out
@@ -13,3 +14,5 @@ node_modules
 npm-debug
 docker-compose*.yml
 dockerfile.dev
+.env
+.env.example
