@@ -18,8 +18,11 @@ services:
       - DB_USER=root
       - DB_PASSWORD=
       - DB_NAME=kodipoint_test
-      - JWT_SECRET=4aNPz7Er243
-      - EMAIL_SECRET=2cx591lTHr
+      - JWT_SECRET=12345qwerty
+      - EMAIL_SECRET=91lx5912clT
+      - NEXTCLOUD_USERNAME=admin
+      - NEXTCLOUD_PASSWORD =P@$$w0rd
+      - NEXTCLOUD_URL=http://192.168.99.100:8080
     command: ["nodemon", "app.js"]
 
   web:
@@ -35,4 +38,7 @@ services:
       - DB_PASSWORD=P@$$w0rd
       - DB_NAME=kodipoint_test
       - JWT_SECRET=12345qwerty
-      - EMAIL_SECRET=2cx591lTHr
+      - EMAIL_SECRET=91lx5912clT
+      - NEXTCLOUD_USERNAME=admin
+      - NEXTCLOUD_PASSWORD =P@$$w0rd
+      - NEXTCLOUD_URL=http://192.168.99.100:8080
