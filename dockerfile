@@ -13,6 +13,5 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 RUN npm install --only=production && npm cache clean --force
 COPY . .
-# RUN npm run test
 
 CMD ["node", "app.js"]

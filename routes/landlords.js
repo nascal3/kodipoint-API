@@ -203,7 +203,7 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
     let uploadPath = '';
     if (req.files) {
-        const deleted = await deleteFile(avatar);
+        const deleted = await deleteFile(userID, 'user');
         if (!deleted) return;
         uploadPath = await uploadImage(req.files, userID, 'user');
         if (!uploadPath) return res.status(500).json({'Error': 'File permissions error in server!'});
