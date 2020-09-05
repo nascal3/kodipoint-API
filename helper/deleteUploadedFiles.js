@@ -1,21 +1,13 @@
-const { Client } = require('nextcloud-node-client');
+const fs = require('fs');
+const path = require('path');
+const appRoot = path.join(__dirname, '..' +'/uploads');
 
-module.exports = async (userID, type) => {
+module.exports = async (filePath) => {
 
-  const location = {
-    property: 'properties',
-    user: 'profile'
-  };
-
-  try {
-    const client = new Client();
-    // get folder
-    const folder = await client.getFolder(`uploads/images/${userID}/${location[type]}`);
-    if (!folder) return true;
-    //delete folder
-    await folder.delete();
-    return true;
-  } catch (err) {
-    throw err
-  }
+  if (!filePath) return true;
+  const directoryPath = `${appRoot}${filePath}`;
+    fs.unlink(directoryPath, (err) => {
+      if (err) return false;
+    });
+  return true;
 };
