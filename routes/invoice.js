@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const url = require('url');
@@ -370,7 +371,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
 
     const invoice = await Invoices.findOne({
         where: {
-            id: req.body.invoice_number
+            id: invoiceNumber
         },
         include: [
             {
@@ -412,10 +413,10 @@ router.post('/send', [auth, landlord], async (req, res) => {
     const link = url.format({
         protocol: req.protocol,
         // host: req.get('host'),
-        host: 'localhost:3000',
+        host: `localhost:${process.env.PORT}`,
         pathname: '/docs/invoice'
     });
-    const invoicePDF = await documents.generateInvoicePDF(link)
+    const invoicePDF = await documents.generateInvoicePDF(link);
 
     const response =  await sendEmail(
         tenantInfo.email,
