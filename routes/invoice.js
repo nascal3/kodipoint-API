@@ -361,14 +361,6 @@ router.get('/single/:invoice_id', [auth, tenant], async (req, res) => {
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
 
-    await Invoices.update({
-      date_issued: new Date()
-    },{
-        where: {
-            id: invoiceNumber
-        }
-    });
-
     const invoice = await Invoices.findOne({
         where: {
             id: invoiceNumber
@@ -425,6 +417,14 @@ router.post('/send', [auth, landlord], async (req, res) => {
         'Rent Invoice.pdf',
         invoicePDF
     );
+
+    await Invoices.update({
+        date_issued: new Date()
+    },{
+        where: {
+            id: invoiceNumber
+        }
+    });
 
     res.status(200).json({ 'results': response });
 });
