@@ -7,6 +7,7 @@ const TenantsProps = require('../models/tenantPropsModel');
 const Tenant = require('../models/tenantModel');
 const auth = require('../middleware/auth');
 const landlord = require('../middleware/landlordAuth');
+const tenant = require('../middleware/tenantAuth');
 
 require('express-async-errors');
 
@@ -51,7 +52,7 @@ router.post('/single', [auth], async (req, res) => {
     res.status(200).json({'result': records});
 });
 
-// GET ALL TENANTS RENTING RECORDS INFO OF A PROPERTY BY PROPERTY ID.
+// GET ALL TENANTS RENTING RECORDS INFO OF A RENTED PROPERTY BY (property id).
 router.post('/property', [auth], async (req, res) => {
     const property_id = req.body.property_id;
 
@@ -132,6 +133,20 @@ router.post('/movein', [auth, landlord], async (req, res) => {
     });
 
     res.status(200).json({'result': userData});
+});
+
+// GET TENANTS' RENTED PROPERTY(IES) (get the properties a tenant is renting)
+router.get('/rentprop/:id', [auth, tenant], async (req, res) => {
+
+    const tenantId = req.params.id
+
+    const property = await TenantsProps.findAll({
+        where: {
+            tenant_id: tenantId
+        }
+    });
+
+    res.status(200).json({'result': property});
 });
 
 //**function check duplication move in entry on edit**

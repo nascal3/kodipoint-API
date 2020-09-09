@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const url = require('url');
@@ -360,17 +361,9 @@ router.get('/single/:invoice_id', [auth, tenant], async (req, res) => {
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
 
-    await Invoices.update({
-      date_issued: new Date()
-    },{
-        where: {
-            id: invoiceNumber
-        }
-    });
-
     const invoice = await Invoices.findOne({
         where: {
-            id: req.body.invoice_number
+            id: invoiceNumber
         },
         include: [
             {
@@ -412,10 +405,10 @@ router.post('/send', [auth, landlord], async (req, res) => {
     const link = url.format({
         protocol: req.protocol,
         // host: req.get('host'),
-        host: 'localhost:3000',
+        host: `localhost:${process.env.PORT}`,
         pathname: '/docs/invoice'
     });
-    const invoicePDF = await documents.generateInvoicePDF(link)
+    const invoicePDF = await documents.generateInvoicePDF(link);
 
     const response =  await sendEmail(
         tenantInfo.email,
@@ -424,6 +417,14 @@ router.post('/send', [auth, landlord], async (req, res) => {
         'Rent Invoice.pdf',
         invoicePDF
     );
+
+    await Invoices.update({
+        date_issued: new Date()
+    },{
+        where: {
+            id: invoiceNumber
+        }
+    });
 
     res.status(200).json({ 'results': response });
 });
