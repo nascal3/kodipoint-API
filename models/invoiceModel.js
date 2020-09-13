@@ -58,6 +58,11 @@ const invoiceModel = connection.define('invoice', {
         type:Sequelize.INTEGER,
         allowNull: false
     },
+    amount_bf: {
+        type:Sequelize.INTEGER,
+        defaultValue: 0,
+        allowNull: false
+    },
     services_amount: {
         type:Sequelize.INTEGER,
         allowNull: false

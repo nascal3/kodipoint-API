@@ -23,6 +23,38 @@ const documents = require('../routes/documents');
 const sendEmail = require('../helper/sendEmail');
 require('express-async-errors');
 
+``
+//***find balance brought forward in latest invoice***
+const getInvoiceBF = async (tenantID) => {
+    const { lastInvoice } = await Invoices.findOne({
+        attributes: [
+            [Sequelize.fn('MAX', Sequelize.col('id')), 'lastInvoice']
+        ],
+        where: {
+            tenant_id: tenantID,
+        },
+        raw: true
+    });
+    if (!lastInvoice) return 0;
+
+    const { amount_bf } = await Invoices.findOne({
+        attributes: ['amount_bf'],
+        where: {
+            id: lastInvoice
+        },
+        raw: true
+    });
+    return amount_bf || 0;
+}
+
+// GET SPECIFIC TENANT INVOICE BALANCE CARRIED FORWARD
+router.get('/bcf/:id', [auth, tenant], async (req, res) => {
+    const tenantID = req.params.id
+    const balanceCarriedForward = await getInvoiceBF(tenantID)
+
+    res.status(200).json({ 'results': balanceCarriedForward});
+});
+
 //***fetch a tenants personal details***
 const tenantDetails = async (tenantID) => {
     return await Tenants.findOne({
@@ -66,7 +98,7 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
 });
 
 //***find all invoices created by landlord for specific property***
-const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo, limit, offset) => {
+const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo) => {
     return await Invoices.findAll({
         order: [
             ['rent_period', 'DESC']
@@ -91,7 +123,7 @@ const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo
 };
 
 //***find all invoices created by landlord***
-const landlordInvoices = async (landlordID, dateFrom, dateTo, limit, offset) => {
+const landlordInvoices = async (landlordID, dateFrom, dateTo) => {
     return await Invoices.findAll({
         order: [
             ['rent_period', 'DESC']
@@ -223,6 +255,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
     const rentPeriod = req.body.rent_period;
     const dateDue = req.body.date_due;
     const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
+    const amountBroughtForward = req.body.amount_bf;
     const loggedUser = req.user.id;
 
     const duplicateInvoice = await checkDuplicateInvoice(tenantID, propertyID, unitNo, rentPeriod);
@@ -238,7 +271,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
 
     const rentInfo = await rentAmount(tenantID, propertyID, unitNo);
     if (!rentInfo) return res.status(404).json({'Error': 'The following tenant records do not exist!'});
-    const amountBalance = (rentInfo.unit_rent + servicesTotal) - amountPaid;
+    const amountBalance = (rentInfo.unit_rent + servicesTotal + amountBroughtForward) - amountPaid;
 
     const invoice = await Invoices.create({
         tenant_id: tenantID,
@@ -250,8 +283,9 @@ router.post('/create', [auth, landlord], async (req, res) => {
         date_due: dateDue,
         rent_amount: rentInfo.unit_rent,
         services_amount: servicesTotal,
-        amount_owed: rentInfo.unit_rent + servicesTotal,
+        amount_owed: rentInfo.unit_rent + servicesTotal + amountBroughtForward,
         amount_paid: amountPaid,
+        amount_bf: amountBroughtForward,
         amount_balance: amountBalance,
         createdBy: loggedUser
     });
