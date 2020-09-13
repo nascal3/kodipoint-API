@@ -17,6 +17,7 @@ const InvBreaks = require('../models/invbreakModel');
 const Tenants = require('../models/tenantModel');
 const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
+const Landlords = require('../models/landlordModel');
 const Properties = require('../models/propertyModel');
 const documents = require('../routes/documents');
 const sendEmail = require('../helper/sendEmail');
@@ -357,6 +358,17 @@ router.get('/single/:invoice_id', [auth, tenant], async (req, res) => {
     res.status(200).json({ 'results': invoiceData });
 });
 
+//***find landlord email address***
+const landlordInfo = async (landlordID) => {
+    return await Landlords.findOne({
+        attributes: ['name', 'email'],
+        where: {
+            landlord_id: landlordID
+        },
+        raw: true
+    });
+};
+
 // GENERATE INVOICE PDF & SEND TO TENANT
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
@@ -384,7 +396,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
 
     // add tenant data to invoice template
     const options = {
-        port: 3000,
+        port: process.env.PORT,
         path: `/docs/invoice`,
         method: 'GET',
         headers: {
@@ -410,21 +422,26 @@ router.post('/send', [auth, landlord], async (req, res) => {
     });
     const invoicePDF = await documents.generateInvoicePDF(link);
 
+    const {email} = await landlordInfo(invoice.landlord_id)
+
     const response =  await sendEmail(
         tenantInfo.email,
+        email,
         'Tenant monthly rental invoice.',
-        `Hi ${tenantInfo.name} here is your rental invoice.`,
+        `Dear ${tenantInfo.name}, here is your rental invoice.`,
         'Rent Invoice.pdf',
         invoicePDF
     );
 
-    await Invoices.update({
-        date_issued: new Date()
-    },{
-        where: {
-            id: invoiceNumber
-        }
-    });
+    if (!invoice.date_issued) {
+        await Invoices.update({
+            date_issued: new Date()
+        },{
+            where: {
+                id: invoiceNumber
+            }
+        });
+    }
 
     res.status(200).json({ 'results': response });
 });
