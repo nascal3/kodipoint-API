@@ -23,7 +23,6 @@ const documents = require('../routes/documents');
 const sendEmail = require('../helper/sendEmail');
 require('express-async-errors');
 
-``
 //***find balance brought forward in latest invoice***
 const getInvoiceBF = async (tenantID, propertyID) => {
     const { lastInvoice } = await Invoices.findOne({
