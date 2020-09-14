@@ -25,13 +25,14 @@ require('express-async-errors');
 
 ``
 //***find balance brought forward in latest invoice***
-const getInvoiceBF = async (tenantID) => {
+const getInvoiceBF = async (tenantID, propertyID) => {
     const { lastInvoice } = await Invoices.findOne({
         attributes: [
             [Sequelize.fn('MAX', Sequelize.col('id')), 'lastInvoice']
         ],
         where: {
             tenant_id: tenantID,
+            property_id: propertyID,
         },
         raw: true
     });
@@ -48,9 +49,10 @@ const getInvoiceBF = async (tenantID) => {
 }
 
 // GET SPECIFIC TENANT INVOICE BALANCE CARRIED FORWARD
-router.get('/bcf/:id', [auth, tenant], async (req, res) => {
-    const tenantID = req.params.id
-    const balanceCarriedForward = await getInvoiceBF(tenantID)
+router.get('/bcf', [auth, tenant], async (req, res) => {
+    const tenantID = req.query.tenant_id
+    const propertyID = req.query.property_id
+    const balanceCarriedForward = await getInvoiceBF(tenantID, propertyID)
 
     res.status(200).json({ 'results': balanceCarriedForward});
 });
@@ -196,7 +198,7 @@ const addInvoiceServiceBreakdown = async (invoiceID, service) => {
     }
 };
 
-//***remove services belonging to a tenants' property unit to invoice breakdown***
+//***remove services belonging to a tenants' property unit in invoice breakdown***
 const removeInvoiceServiceBreakdown = async (invoiceID, service) => {
     return await InvBreaks.destroy({
         where: {
@@ -350,12 +352,12 @@ router.post('/edit/service', [auth, landlord], async (req, res) => {
     }
 
     const servicesTotal = await invoiceBreakdownServices(invoice.id);
-    const amountBalance = (invoice.rent_amount + servicesTotal) - invoice.amount_paid;
+    const amountBalance = (invoice.rent_amount + servicesTotal + invoice.amount_bf) - invoice.amount_paid;
 
     await Invoices.update({
         services_amount: servicesTotal,
         amount_balance: amountBalance,
-        amount_owed: invoice.rent_amount + servicesTotal,
+        amount_owed: invoice.rent_amount + servicesTotal + invoice.amount_bf,
         updatedBy: loggedUser
     },{
         where: {

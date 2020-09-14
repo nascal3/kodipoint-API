@@ -19,7 +19,7 @@ services:
       - DB_PASSWORD=
       - DB_NAME=kodipoint_test
       - JWT_SECRET=12345qwerty
-      - EMAIL_SECRET=91lx5912clT
+      - EMAIL_SECRET=2cx591lTHr
       - ADMIN_EMAIL=nascal3@gmail.com
       - PORT=3000
     command: ["nodemon", "app.js"]
