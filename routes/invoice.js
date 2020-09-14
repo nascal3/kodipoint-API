@@ -427,6 +427,17 @@ router.post('/send', [auth, landlord], async (req, res) => {
     if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
     const tenantInfo = await tenantDetails(invoice.tenant_id);
 
+    // add date issued/send date if not added yet
+    if (!invoice.date_issued) {
+        await Invoices.update({
+            date_issued: new Date()
+        },{
+            where: {
+                id: invoiceNumber
+            }
+        });
+    }
+
     const invoiceData = {...tenantInfo, ...invoice.dataValues};
     documents.setInvoiceData(JSON.stringify(invoiceData))
 
@@ -442,7 +453,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
     };
     const request = http.request( options, (res) => {
         res.setEncoding('utf8');
-        console.log('Status Code:', res.statusCode);
+        console.log('>>> status code:', res.statusCode);
     });
     request.on('error', (err) => {
         console.error('problem with request: ' + err.message);
@@ -469,15 +480,20 @@ router.post('/send', [auth, landlord], async (req, res) => {
         invoicePDF
     );
 
-    if (!invoice.date_issued) {
-        await Invoices.update({
-            date_issued: new Date()
-        },{
-            where: {
-                id: invoiceNumber
-            }
-        });
-    }
+    res.status(200).json({ 'results': response });
+});
+
+// RESET INVOICE DATE ISSUED DATE
+router.post('/reset/dateIssued', [auth, landlord], async (req, res) => {
+    const invoiceNumber = req.body.invoice_number;
+
+    const response = await Invoices.update({
+        date_issued: null
+    },{
+        where: {
+            id: invoiceNumber
+        }
+    });
 
     res.status(200).json({ 'results': response });
 });

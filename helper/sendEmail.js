@@ -8,7 +8,6 @@ const sendEmail = async (to, ccLandlord, subject, text, filename, fileContent) =
         port: 587,
         secure: false,
         tls: { rejectUnauthorized: false },
-        transportMethod: 'SMTP',
         auth: {
             user: 'info@kodipoint.com',
             pass: process.env.EMAIL_SECRET

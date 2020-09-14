@@ -33,7 +33,7 @@ const generateInvoicePDF = async (url) => {
         });
 
         const pdf = await page.pdf({
-            // path: `uploads/invoice.pdf`,
+            // path: `uploads/docs/invoice.pdf`,
             format: 'A4',
             printBackground: true
         });
