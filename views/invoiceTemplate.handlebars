@@ -39,7 +39,7 @@
          <div>{{name}}</div>
          <div>{{phone}}</div>
          <div>{{email}}</div>
-         <div><span>House Unit:</span> {{unit_no}}</div>
+         <div><span>Rental Unit:</span> {{unit_no}}</div>
      </div>
 </section>
 <section class="breakdown-table">
@@ -52,6 +52,10 @@
         <tr>
             <td>Rent</td>
             <td>{{thousandsSeparator rent_amount}}</td>
+        </tr>
+        <tr>
+            <td>Balance carried forward</td>
+            <td>{{thousandsSeparator amount_bf}}</td>
         </tr>
     </table>
 

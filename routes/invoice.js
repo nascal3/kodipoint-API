@@ -17,10 +17,45 @@ const InvBreaks = require('../models/invbreakModel');
 const Tenants = require('../models/tenantModel');
 const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
+const Landlords = require('../models/landlordModel');
 const Properties = require('../models/propertyModel');
 const documents = require('../routes/documents');
 const sendEmail = require('../helper/sendEmail');
 require('express-async-errors');
+
+``
+//***find balance brought forward in latest invoice***
+const getInvoiceBF = async (tenantID, propertyID) => {
+    const { lastInvoice } = await Invoices.findOne({
+        attributes: [
+            [Sequelize.fn('MAX', Sequelize.col('id')), 'lastInvoice']
+        ],
+        where: {
+            tenant_id: tenantID,
+            property_id: propertyID,
+        },
+        raw: true
+    });
+    if (!lastInvoice) return 0;
+
+    const { amount_bf } = await Invoices.findOne({
+        attributes: ['amount_bf'],
+        where: {
+            id: lastInvoice
+        },
+        raw: true
+    });
+    return amount_bf || 0;
+}
+
+// GET SPECIFIC TENANT INVOICE BALANCE CARRIED FORWARD
+router.get('/bcf', [auth, tenant], async (req, res) => {
+    const tenantID = req.query.tenant_id
+    const propertyID = req.query.property_id
+    const balanceCarriedForward = await getInvoiceBF(tenantID, propertyID)
+
+    res.status(200).json({ 'results': balanceCarriedForward});
+});
 
 //***fetch a tenants personal details***
 const tenantDetails = async (tenantID) => {
@@ -65,7 +100,7 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
 });
 
 //***find all invoices created by landlord for specific property***
-const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo, limit, offset) => {
+const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo) => {
     return await Invoices.findAll({
         order: [
             ['rent_period', 'DESC']
@@ -90,7 +125,7 @@ const landlordPropertyInvoices = async (landlordID, propertyID, dateFrom, dateTo
 };
 
 //***find all invoices created by landlord***
-const landlordInvoices = async (landlordID, dateFrom, dateTo, limit, offset) => {
+const landlordInvoices = async (landlordID, dateFrom, dateTo) => {
     return await Invoices.findAll({
         order: [
             ['rent_period', 'DESC']
@@ -163,7 +198,7 @@ const addInvoiceServiceBreakdown = async (invoiceID, service) => {
     }
 };
 
-//***remove services belonging to a tenants' property unit to invoice breakdown***
+//***remove services belonging to a tenants' property unit in invoice breakdown***
 const removeInvoiceServiceBreakdown = async (invoiceID, service) => {
     return await InvBreaks.destroy({
         where: {
@@ -222,6 +257,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
     const rentPeriod = req.body.rent_period;
     const dateDue = req.body.date_due;
     const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
+    const amountBroughtForward = req.body.amount_bf;
     const loggedUser = req.user.id;
 
     const duplicateInvoice = await checkDuplicateInvoice(tenantID, propertyID, unitNo, rentPeriod);
@@ -237,7 +273,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
 
     const rentInfo = await rentAmount(tenantID, propertyID, unitNo);
     if (!rentInfo) return res.status(404).json({'Error': 'The following tenant records do not exist!'});
-    const amountBalance = (rentInfo.unit_rent + servicesTotal) - amountPaid;
+    const amountBalance = (rentInfo.unit_rent + servicesTotal + amountBroughtForward) - amountPaid;
 
     const invoice = await Invoices.create({
         tenant_id: tenantID,
@@ -249,8 +285,9 @@ router.post('/create', [auth, landlord], async (req, res) => {
         date_due: dateDue,
         rent_amount: rentInfo.unit_rent,
         services_amount: servicesTotal,
-        amount_owed: rentInfo.unit_rent + servicesTotal,
+        amount_owed: rentInfo.unit_rent + servicesTotal + amountBroughtForward,
         amount_paid: amountPaid,
+        amount_bf: amountBroughtForward,
         amount_balance: amountBalance,
         createdBy: loggedUser
     });
@@ -315,12 +352,12 @@ router.post('/edit/service', [auth, landlord], async (req, res) => {
     }
 
     const servicesTotal = await invoiceBreakdownServices(invoice.id);
-    const amountBalance = (invoice.rent_amount + servicesTotal) - invoice.amount_paid;
+    const amountBalance = (invoice.rent_amount + servicesTotal + invoice.amount_bf) - invoice.amount_paid;
 
     await Invoices.update({
         services_amount: servicesTotal,
         amount_balance: amountBalance,
-        amount_owed: invoice.rent_amount + servicesTotal,
+        amount_owed: invoice.rent_amount + servicesTotal + invoice.amount_bf,
         updatedBy: loggedUser
     },{
         where: {
@@ -357,6 +394,17 @@ router.get('/single/:invoice_id', [auth, tenant], async (req, res) => {
     res.status(200).json({ 'results': invoiceData });
 });
 
+//***find landlord email address***
+const landlordInfo = async (landlordID) => {
+    return await Landlords.findOne({
+        attributes: ['name', 'email'],
+        where: {
+            landlord_id: landlordID
+        },
+        raw: true
+    });
+};
+
 // GENERATE INVOICE PDF & SEND TO TENANT
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
@@ -384,7 +432,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
 
     // add tenant data to invoice template
     const options = {
-        port: 3000,
+        port: process.env.PORT,
         path: `/docs/invoice`,
         method: 'GET',
         headers: {
@@ -410,21 +458,26 @@ router.post('/send', [auth, landlord], async (req, res) => {
     });
     const invoicePDF = await documents.generateInvoicePDF(link);
 
+    const {email} = await landlordInfo(invoice.landlord_id)
+
     const response =  await sendEmail(
         tenantInfo.email,
+        email,
         'Tenant monthly rental invoice.',
-        `Hi ${tenantInfo.name} here is your rental invoice.`,
+        `Dear ${tenantInfo.name}, here is your rental invoice.`,
         'Rent Invoice.pdf',
         invoicePDF
     );
 
-    await Invoices.update({
-        date_issued: new Date()
-    },{
-        where: {
-            id: invoiceNumber
-        }
-    });
+    if (!invoice.date_issued) {
+        await Invoices.update({
+            date_issued: new Date()
+        },{
+            where: {
+                id: invoiceNumber
+            }
+        });
+    }
 
     res.status(200).json({ 'results': response });
 });
