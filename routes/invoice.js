@@ -417,6 +417,14 @@ const smsDateYearFormat = (date) => {
     return format(parseISO(date), 'MMM, yyyy')
 };
 
+//***format invoice SMS message***
+const smsInvoiceMessage = (data) => {
+    return `Dear ${data.name}, here is your rent invoice for ${smsDateYearFormat(data.rent_period)}. 
+    Rent: Ksh${data.rent_amount}, Balance Brought Forward: Ksh${data.amount_bf}, 
+    Service Total: Ksh${data.services_amount}, Amount Paid: Ksh${data.amount_paid}, 
+    Amount Due: Ksh${data.amount_balance}. Date Due:${smsDateMonthFormat(data.date_due)}.`;
+}
+
 // GENERATE INVOICE PDF & SEND TO TENANT
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
@@ -485,24 +493,20 @@ router.post('/send', [auth, landlord], async (req, res) => {
 
     const [areaCode, phoneNum] = tenantInfo.phone.split(' ');
     const tenantPhoneNum = `${areaCode}${phoneNum}`;
+    const smsMessage = smsInvoiceMessage(invoiceData);
 
-    const message = `Dear ${invoiceData.name}, here is your invoice for ${smsDateYearFormat(invoiceData.rent_period)}. 
-    Rent:${invoiceData.rent_amount}, Balance Brought Forward:${invoiceData.amount_bf}, 
-    Service Total:${invoiceData.services_amount}, Amount Paid:${invoiceData.amount_paid}, 
-    Amount Due:${invoiceData.amount_balance}. Date Due:${smsDateMonthFormat(invoiceData.date_due)}.`;
+    const smsResponse = await sendSMS(tenantPhoneNum, smsMessage);
 
-    const smsResponse = await sendSMS(tenantPhoneNum, message);
-
-    const response =  await sendEmail(
+    const emailResponse =  await sendEmail(
         tenantInfo.email,
         email,
-        'Tenant monthly rental invoice.',
+        'Tenant rental invoice.',
         `Dear ${tenantInfo.name}, here is your rental invoice.`,
         'Rent Invoice.pdf',
         invoicePDF
     );
 
-    res.status(200).json({ 'results': {...smsResponse, ...response} });
+    res.status(200).json({ 'results': {...smsResponse, ...emailResponse} });
 });
 
 // RESET INVOICE DATE ISSUED DATE

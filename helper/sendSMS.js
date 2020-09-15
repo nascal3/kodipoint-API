@@ -16,7 +16,9 @@ const sendSMS = async (to, message) => {
     }
 
     try {
-       return await sms.send(options);
+       const response = await sms.send(options);
+       console.log('>>> SMS sent');
+       return response;
     }catch (err) {
         throw err
     }
