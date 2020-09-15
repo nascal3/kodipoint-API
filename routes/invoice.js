@@ -489,15 +489,14 @@ router.post('/send', [auth, landlord], async (req, res) => {
     });
     const invoicePDF = await documents.generateInvoicePDF(link);
 
-    const { email } = await landlordInfo(invoice.landlord_id);
-
     const [areaCode, phoneNum] = tenantInfo.phone.split(' ');
-    const tenantPhoneNum = `${areaCode}${phoneNum}`;
+    const tenantPhoneNumber = `${areaCode}${phoneNum}`;
     const smsMessage = smsInvoiceMessage(invoiceData);
 
-    const smsResponse = await sendSMS(tenantPhoneNum, smsMessage);
+    const { email } = await landlordInfo(invoice.landlord_id);
 
-    const emailResponse =  await sendEmail(
+    const smsResponse = await sendSMS(tenantPhoneNumber, smsMessage);
+    const emailResponse = await sendEmail(
         tenantInfo.email,
         email,
         'Tenant rental invoice.',
