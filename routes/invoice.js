@@ -408,7 +408,7 @@ const landlordInfo = async (landlordID) => {
 //***date and month format for SMS messages***
 const smsDateMonthFormat = (date) => {
     if (!date) return
-    return format(date, 'MMM, Do yyyy')
+    return format(date, 'MMM, do yyyy')
 };
 
 //***date and year format for SMS messages***
