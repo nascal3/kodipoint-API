@@ -419,8 +419,8 @@ const smsDateYearFormat = (date) => {
 
 //***format invoice SMS message***
 const smsInvoiceMessage = (data) => {
-    return `Dear ${data.name}, here is your rent invoice for ${smsDateYearFormat(data.rent_period)}. 
-    Rent: Ksh${data.rent_amount}, Balance Brought Forward: Ksh${data.amount_bf}, 
+    return `Dear ${data.name}, your rent invoice for ${data.property_name}, Unit no: ${data.unit_no}, 
+    ${smsDateYearFormat(data.rent_period)}. Rent: Ksh${data.rent_amount}, Balance Brought Forward: Ksh${data.amount_bf}, 
     Service Total: Ksh${data.services_amount}, Amount Paid: Ksh${data.amount_paid}, 
     Amount Due: Ksh${data.amount_balance}. Date Due:${smsDateMonthFormat(data.date_due)}.`;
 }
