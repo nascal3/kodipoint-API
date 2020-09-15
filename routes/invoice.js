@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const url = require('url');
 const http = require('http');
-const { sub } = require('date-fns');
+const { format, parseISO, sub } = require('date-fns');
 
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -21,9 +21,9 @@ const Landlords = require('../models/landlordModel');
 const Properties = require('../models/propertyModel');
 const documents = require('../routes/documents');
 const sendEmail = require('../helper/sendEmail');
+const sendSMS = require('../helper/sendSMS');
 require('express-async-errors');
 
-``
 //***find balance brought forward in latest invoice***
 const getInvoiceBF = async (tenantID, propertyID) => {
     const { lastInvoice } = await Invoices.findOne({
@@ -405,6 +405,23 @@ const landlordInfo = async (landlordID) => {
     });
 };
 
+//***date and month format for SMS messages***
+const smsDateMonthFormat = (date) => {
+    if (!date) return
+    return format(date, 'MMM, do yyyy')
+};
+
+//***date and year format for SMS messages***
+const smsDateYearFormat = (date) => {
+    if (!date) return
+    return format(parseISO(date), 'MMM, yyyy')
+};
+
+//***format invoice SMS message***
+const smsInvoiceMessage = (data) => {
+  return `Dear ${data.name}, your rent invoice for ${data.property_name.toUpperCase()}, Unit no: ${data.unit_no.toUpperCase()}, ${smsDateYearFormat(data.rent_period)}.\nInvoice no: #${data.id}. Rent: Ksh${data.rent_amount}, Balance Brought Forward: Ksh${data.amount_bf}, Service Total: Ksh${data.services_amount}, Amount Paid: Ksh${data.amount_paid}, Amount Due: Ksh${data.amount_balance}. Due Date:${smsDateMonthFormat(data.date_due)}.`;
+}
+
 // GENERATE INVOICE PDF & SEND TO TENANT
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
@@ -427,6 +444,17 @@ router.post('/send', [auth, landlord], async (req, res) => {
     if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
     const tenantInfo = await tenantDetails(invoice.tenant_id);
 
+    // add date issued/send date if not added yet
+    if (!invoice.date_issued) {
+        await Invoices.update({
+            date_issued: new Date()
+        },{
+            where: {
+                id: invoiceNumber
+            }
+        });
+    }
+
     const invoiceData = {...tenantInfo, ...invoice.dataValues};
     documents.setInvoiceData(JSON.stringify(invoiceData))
 
@@ -442,7 +470,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
     };
     const request = http.request( options, (res) => {
         res.setEncoding('utf8');
-        console.log('Status Code:', res.statusCode);
+        console.log('>>> status code:', res.statusCode);
     });
     request.on('error', (err) => {
         console.error('problem with request: ' + err.message);
@@ -458,26 +486,36 @@ router.post('/send', [auth, landlord], async (req, res) => {
     });
     const invoicePDF = await documents.generateInvoicePDF(link);
 
-    const {email} = await landlordInfo(invoice.landlord_id)
+    const [areaCode, phoneNum] = tenantInfo.phone.split(' ');
+    const tenantPhoneNumber = `${areaCode}${phoneNum}`;
+    const smsMessage = smsInvoiceMessage(invoiceData);
 
-    const response =  await sendEmail(
+    const { email } = await landlordInfo(invoice.landlord_id);
+
+    const smsResponse = await sendSMS(tenantPhoneNumber, smsMessage);
+    const emailResponse = await sendEmail(
         tenantInfo.email,
         email,
-        'Tenant monthly rental invoice.',
+        'Tenant rental invoice.',
         `Dear ${tenantInfo.name}, here is your rental invoice.`,
         'Rent Invoice.pdf',
         invoicePDF
     );
 
-    if (!invoice.date_issued) {
-        await Invoices.update({
-            date_issued: new Date()
-        },{
-            where: {
-                id: invoiceNumber
-            }
-        });
-    }
+    res.status(200).json({ 'results': {...smsResponse, ...emailResponse} });
+});
+
+// RESET INVOICE DATE ISSUED DATE
+router.post('/reset/dateIssued', [auth, landlord], async (req, res) => {
+    const invoiceNumber = req.body.invoice_number;
+
+    const response = await Invoices.update({
+        date_issued: null
+    },{
+        where: {
+            id: invoiceNumber
+        }
+    });
 
     res.status(200).json({ 'results': response });
 });

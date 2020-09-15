@@ -16,3 +16,4 @@ docker-compose*.yml
 dockerfile.dev
 .env
 .env.example
+uploads/images/
