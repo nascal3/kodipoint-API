@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const url = require('url');
 const http = require('http');
-const { sub } = require('date-fns');
+const { format, parseISO, sub } = require('date-fns');
 
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -21,6 +21,7 @@ const Landlords = require('../models/landlordModel');
 const Properties = require('../models/propertyModel');
 const documents = require('../routes/documents');
 const sendEmail = require('../helper/sendEmail');
+const sendSMS = require('../helper/sendSMS');
 require('express-async-errors');
 
 //***find balance brought forward in latest invoice***
@@ -404,6 +405,18 @@ const landlordInfo = async (landlordID) => {
     });
 };
 
+//***date and month format for SMS messages***
+const smsDateMonthFormat = (date) => {
+    if (!date) return
+    return format(date, 'MMM, d yyyy')
+};
+
+//***date and year format for SMS messages***
+const smsDateYearFormat = (date) => {
+    if (!date) return
+    return format(parseISO(date), 'MMM, yyyy')
+};
+
 // GENERATE INVOICE PDF & SEND TO TENANT
 router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceNumber = req.body.invoice_number;
@@ -468,7 +481,17 @@ router.post('/send', [auth, landlord], async (req, res) => {
     });
     const invoicePDF = await documents.generateInvoicePDF(link);
 
-    const {email} = await landlordInfo(invoice.landlord_id)
+    const { email } = await landlordInfo(invoice.landlord_id);
+
+    const [areaCode, phoneNum] = tenantInfo.phone.split(' ');
+    const tenantPhoneNum = `${areaCode}${phoneNum}`;
+
+    const message = `Dear ${invoiceData.name}, here is your invoice for ${smsDateYearFormat(invoiceData.rent_period)}. 
+    Rent:${invoiceData.rent_amount}, Balance Brought Forward:${invoiceData.amount_bf}, 
+    Service Total:${invoiceData.services_amount}, Amount Paid:${invoiceData.amount_paid}, 
+    Amount Due:${invoiceData.amount_balance}. Date Due:${smsDateMonthFormat(invoiceData.date_due)}.`;
+
+    const smsResponse = await sendSMS(tenantPhoneNum, message);
 
     const response =  await sendEmail(
         tenantInfo.email,
@@ -479,7 +502,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
         invoicePDF
     );
 
-    res.status(200).json({ 'results': response });
+    res.status(200).json({ 'results': {...smsResponse, ...response} });
 });
 
 // RESET INVOICE DATE ISSUED DATE
