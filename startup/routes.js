@@ -2,6 +2,8 @@ const compression = require('compression');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const fileUpload = require('express-fileupload');
+const path = require('path');
 
 const users = require('../routes/users');
 const landlords = require('../routes/landlords');
@@ -10,8 +12,6 @@ const tenantsProps = require('../routes/tenantsProps');
 const properties = require('../routes/properties');
 const invoice = require('../routes/invoice');
 const documents = require('../routes/documents');
-const path = require('path');
-const fileUpload = require('express-fileupload');
 
 module.exports = (app) => {
   app.use(helmet());
