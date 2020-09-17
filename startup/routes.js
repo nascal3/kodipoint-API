@@ -1,4 +1,6 @@
+const compression = require('compression');
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
 
 const users = require('../routes/users');
@@ -12,6 +14,8 @@ const path = require('path');
 const fileUpload = require('express-fileupload');
 
 module.exports = (app) => {
+  app.use(helmet());
+  app.use(compression());
   app.use(
     cors(),
     express.json(),
