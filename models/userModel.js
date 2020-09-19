@@ -22,7 +22,7 @@ const userModel = connection.define('user', {
     },
     password: {
         type:Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     }
 },{
     indexes:[

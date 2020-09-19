@@ -102,8 +102,6 @@ const createUser = async (user_info) => {
 
     // hide data from json results
     userData.password = undefined;
-    userData.createdAt = undefined;
-    userData.updatedAt = undefined;
 
     return {'data': userData, 'token': token};
 };
