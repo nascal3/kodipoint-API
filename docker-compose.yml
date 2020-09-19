@@ -21,8 +21,8 @@ services:
       - JWT_SECRET=12345qwerty
       - EMAIL_SECRET=91lx5912clT
       - ADMIN_EMAIL=nascal3@gmail.com
-      - API_USER=sandbox
-      - API_KEY=027d931a0d3fee29b96a0784cc337ff570af638547b143eba67d1f1b9f8a3a38
+      - SMS_API_USER=sandbox
+      - SMS_API_KEY=027d931a0d3fee29b96a0784cc337ff570af638547b143eba67d1f1b9f8a3a38
       - PORT=3000
     command: ["nodemon", "app.js"]
 
@@ -41,6 +41,6 @@ services:
       - JWT_SECRET=12345qwerty
       - EMAIL_SECRET=91lx5912clT
       - ADMIN_EMAIL=nascal3@gmail.com
-      - API_USER=sandbox
-      - API_KEY=027d931a0d3fee29b96a0784cc337ff570af638547b143eba67d1f1b9f8a3a38
+      - SMS_API_USER=sandbox
+      - SMS_API_KEY=027d931a0d3fee29b96a0784cc337ff570af638547b143eba67d1f1b9f8a3a38
       - PORT=3000
