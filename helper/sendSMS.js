@@ -1,7 +1,7 @@
 require('dotenv').config();
 const credentials = {
-    apiKey: process.env.API_KEY,
-    username: process.env.API_USER
+    apiKey: process.env.SMS_API_KEY,
+    username: process.env.SMS_API_USER
 };
 const AfricaTalking = require('africastalking')(credentials);
 

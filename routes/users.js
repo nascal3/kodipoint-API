@@ -69,7 +69,6 @@ router.post('/login', async (req, res) => {
 
     // set authorisation header
     return res.header('Authorization', token).status(200).json({'user':userData, 'token': token});
-
 });
 
 // ***Function create a new user to DB***

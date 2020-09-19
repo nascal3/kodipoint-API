@@ -68,6 +68,17 @@ const tenantDetails = async (tenantID) => {
     });
 }
 
+//***map user ID to landlord ID***
+const mapLandlordID = async (userID) => {
+    return await Landlords.findOne({
+        attributes: ['landlord_id'],
+        where: {
+            user_id: userID
+        },
+        raw: true
+    });
+};
+
 // GET SPECIFIC TENANT INVOICES (filtered by date issued)
 router.post('/tenant/all', [auth, tenant], async (req, res) => {
 
@@ -75,26 +86,54 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
     const dateFrom = req.body.date_from || sub(new Date(), { months: 2 });
     const dateTo = req.body.date_to || new Date();
 
-    const invoices = await Invoices.findAll({
-        order: [
-            ['rent_period', 'DESC']
-        ],
-        where: {
-            tenant_id: tenantID,
-            rent_period: {
-                [Op.between]: [dateFrom, dateTo]
-            }
-        },
-        include: [
-            {
-                model: InvBreaks,
-                as: 'invoice_breakdowns',
-                attributes: {
-                    exclude: ['createdAt', 'updatedAt']
+    let invoices = null;
+    const userRole = req.user.role;
+    const { landlord_id } = await mapLandlordID(req.user.id);
+
+    if (userRole === 'admin' || userRole === 'superU' || userRole === 'tenant') {
+        invoices = await Invoices.findAll({
+            order: [
+                ['rent_period', 'DESC']
+            ],
+            where: {
+                tenant_id: tenantID,
+                rent_period: {
+                    [Op.between]: [dateFrom, dateTo]
                 }
-            }
-        ]
-    });
+            },
+            include: [
+                {
+                    model: InvBreaks,
+                    as: 'invoice_breakdowns',
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
+                }
+            ]
+        });
+    } else if (userRole === 'landlord' || userRole === 'landlordTenant') {
+        invoices = await Invoices.findAll({
+            order: [
+                ['rent_period', 'DESC']
+            ],
+            where: {
+                tenant_id: tenantID,
+                landlord_id: landlord_id,
+                rent_period: {
+                    [Op.between]: [dateFrom, dateTo]
+                }
+            },
+            include: [
+                {
+                    model: InvBreaks,
+                    as: 'invoice_breakdowns',
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
+                }
+            ]
+        });
+    }
 
     res.status(200).json({ 'results': invoices});
 });
