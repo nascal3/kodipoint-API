@@ -43,7 +43,6 @@ router.post('/auth', async (req, res) => {
 router.post('/register', async (req, res) => {
     const userProfile = req.body.profile;
     const role = req.body.role;
-    console.log('>>>', userProfile)
 
     const userData = await findUser(userProfile.bu);
     if (userData && Object.keys(userData).length) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
