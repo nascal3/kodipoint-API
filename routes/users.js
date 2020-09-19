@@ -69,7 +69,6 @@ router.post('/login', async (req, res) => {
 
     // set authorisation header
     return res.header('Authorization', token).status(200).json({'user':userData, 'token': token});
-
 });
 
 // ***Function create a new user to DB***
@@ -103,8 +102,6 @@ const createUser = async (user_info) => {
 
     // hide data from json results
     userData.password = undefined;
-    userData.createdAt = undefined;
-    userData.updatedAt = undefined;
 
     return {'data': userData, 'token': token};
 };

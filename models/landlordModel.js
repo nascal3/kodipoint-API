@@ -38,7 +38,7 @@ const landlordModel = connection.define('landlord', {
     },
     phone: {
         type: Sequelize.STRING(30),
-        allowNull: false
+        allowNull: true
     },
     postal_address: {
         type: Sequelize.STRING(60),
@@ -76,10 +76,6 @@ const landlordModel = connection.define('landlord', {
     },
     approvedBy: {
         type:Sequelize.INTEGER,
-        references: {
-            model: userModel,
-            key: userModel.id
-        },
         allowNull: false
     },
     updatedBy: {

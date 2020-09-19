@@ -158,6 +158,20 @@ const duplicatesKRAExcept = async (info, userID) => {
     });
     return Object.keys(landlordsResults).length
 };
+// user email exception***
+const duplicateEmail = async (info, userID) => {
+    const landlordsResults  = await Landlords.findAll({
+        where: {
+            kra_pin: info.email,
+            [Op.and]: {
+                user_id: {
+                    [Op.ne]: userID
+                }
+            }
+        }
+    });
+    return Object.keys(landlordsResults).length
+};
 
 // EDIT LANDLORDS PERSONAL DETAILS
 router.post('/profile/edit', [auth, landlord], async (req, res) => {
@@ -178,6 +192,9 @@ router.post('/profile/edit', [auth, landlord], async (req, res) => {
 
     const KRAnumberDuplicates = await duplicatesKRAExcept(info, userID);
     if (KRAnumberDuplicates) return res.status(422).json({'Error': 'The following KRA Pin already exists!'});
+
+    const emailDuplicates = await duplicateEmail(info, userID);
+    if (emailDuplicates) return res.status(422).json({'Error': 'The following email already exists!'});
 
     const params = {
         'id': userID,

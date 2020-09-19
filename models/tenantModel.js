@@ -27,7 +27,7 @@ const tenantModel = connection.define('tenant', {
     },
     phone: {
         type:Sequelize.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     national_id: {
         type: Sequelize.STRING,

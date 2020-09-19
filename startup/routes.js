@@ -1,5 +1,9 @@
+const compression = require('compression');
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
+const fileUpload = require('express-fileupload');
+const path = require('path');
 
 const users = require('../routes/users');
 const landlords = require('../routes/landlords');
@@ -8,10 +12,11 @@ const tenantsProps = require('../routes/tenantsProps');
 const properties = require('../routes/properties');
 const invoice = require('../routes/invoice');
 const documents = require('../routes/documents');
-const path = require('path');
-const fileUpload = require('express-fileupload');
+const googleAuth = require('../routes/googleAuth');
 
 module.exports = (app) => {
+  app.use(helmet());
+  app.use(compression());
   app.use(
     cors(),
     express.json(),
@@ -28,6 +33,7 @@ module.exports = (app) => {
   app.use('/api/properties', properties.router);
   app.use('/api/invoice', invoice);
   app.use('/docs', documents.router);
+  app.use('/api/google', googleAuth);
   app.use(express.static('public'));
   app.use('/file', express.static(path.join(__dirname, '..' +'/uploads')));
 };

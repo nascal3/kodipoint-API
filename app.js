@@ -38,7 +38,7 @@ let server = null;
         console.log('DB_PASSWORD -->', process.env.DB_PASSWORD);
         console.log('JWT_KEY -->', process.env.JWT_SECRET);
     } catch (err) {
-        console.error('Error occurred: ',err.name, '>==> Message: ',err.message);
+        throw new Error(`Error occurred: ${err.name} ===> ${err.message}`);
     }
 })();
 
