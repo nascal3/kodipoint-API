@@ -17,11 +17,23 @@ const findUser = async(email) => {
     });
 };
 
+//get flattened user google details
+const userDetailsArray = (userInfoObject) => {
+    const userPropertyArray = []
+    for (let key in userInfoObject) {
+        userPropertyArray.push(userInfoObject[key])
+    }
+    return userPropertyArray;
+}
+
 // LOGIN USER VIA GOOGLE AUTH
 router.post('/auth', async (req, res) => {
     const userProfile = req.body
 
-    const userData = await findUser(userProfile.bu);
+    if (!Object.keys(userProfile).length) return  res.status(400).json({'Error': 'The following user does not exist!'});
+    const userPropertyArray = userDetailsArray(userProfile);
+
+    const userData = await findUser(userPropertyArray[5]);
     if (!Object.keys(userData).length) return res.status(400).json({'Error': 'The following user does not exist!'});
 
     // generate user tokens
@@ -44,23 +56,26 @@ router.post('/register', async (req, res) => {
     const userProfile = req.body.profile;
     const role = req.body.role;
 
-    const userData = await findUser(userProfile.bu);
+    if (!Object.keys(userProfile).length) return  res.status(400).json({'Error': 'The following Email/Username already exists!'});
+    const userPropertyArray = userDetailsArray(userProfile);
+
+    const userData = await findUser(userPropertyArray[5]);
     if (userData && Object.keys(userData).length) return res.status(422).json({'Error': 'The following Email/Username already exists!'});
 
     const newUser = await Users.create({
-        email: userProfile.bu,
-        name: userProfile.Ad,
+        email: userPropertyArray[5],
+        name: userPropertyArray[1],
         role: role
     });
     const newUserID = newUser.id;
 
     if (role === 'tenant') {
-        await user.createNewTenant(newUserID, newUser, userProfile.jK, newUserID);
+        await user.createNewTenant(newUserID, newUser, userPropertyArray[4], newUserID);
     } else if (role === 'landlord') {
-        await user.createNewLandlord(newUserID, newUser, userProfile.jK, newUserID);
+        await user.createNewLandlord(newUserID, newUser, userPropertyArray[4], newUserID);
     } else {
-        await user.createNewLandlord(newUserID, newUser, userProfile.jK, newUserID);
-        await user.createNewTenant(newUserID, newUser, userProfile.jK, newUserID);
+        await user.createNewLandlord(newUserID, newUser, userPropertyArray[4], newUserID);
+        await user.createNewTenant(newUserID, newUser, userPropertyArray[4], newUserID);
     }
 
     // generate user tokens
