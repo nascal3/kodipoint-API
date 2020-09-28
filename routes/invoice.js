@@ -88,7 +88,11 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
 
     let invoices = null;
     const userRole = req.user.role;
-    const { landlord_id } = await mapLandlordID(req.user.id);
+    let landlordID = null;
+    if (userRole === 'landlord' || userRole === 'landlordTenant') {
+        const { landlord_id } = await mapLandlordID(req.user.id);
+        landlordID = landlord_id
+    }
 
     if (userRole === 'admin' || userRole === 'superU' || userRole === 'tenant') {
         invoices = await Invoices.findAll({
@@ -118,7 +122,7 @@ router.post('/tenant/all', [auth, tenant], async (req, res) => {
             ],
             where: {
                 tenant_id: tenantID,
-                landlord_id: landlord_id,
+                landlord_id: landlordID,
                 rent_period: {
                     [Op.between]: [dateFrom, dateTo]
                 }
