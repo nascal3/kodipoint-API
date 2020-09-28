@@ -4,7 +4,7 @@ const { format, parseISO } = require('date-fns');
 const docHelpers = {
     formatDate: function(value) {
         if (!value) return;
-        return format(parseISO(value), 'MMM, d yyyy');
+        return format(parseISO(value), 'MMM d, yyyy');
     },
 
     formatDateMonth: function(value) {
