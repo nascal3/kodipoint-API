@@ -14,6 +14,7 @@ const tenant = require('../middleware/tenantAuth');
 
 const Invoices = require('../models/invoiceModel');
 const InvBreaks = require('../models/invbreakModel');
+const Receipts = require('../models/receiptModel');
 const Tenants = require('../models/tenantModel');
 const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
@@ -299,7 +300,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
     const unitNo = req.body.unit_no;
     const rentPeriod = req.body.rent_period;
     const dateDue = req.body.date_due;
-    const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
+    const amountPaid =  req.body.amount_paid || 0;
     const amountBroughtForward = req.body.amount_bf;
     const loggedUser = req.user.id;
 
@@ -573,11 +574,83 @@ router.post('/reset/dateIssued', [auth, landlord], async (req, res) => {
     res.status(200).json({ 'results': response });
 });
 
+//***update invoice with receipt payment***
+const updateInvoice = async (invoice, receipt, loggedUser) => {
+
+    const { id } = invoice;
+    const { paid, already_paid, amount_balance } = receipt;
+    const totalPaid = paid + already_paid;
+
+    const paid_status = amount_balance <= 0 ? 'full' : 'partial';
+    console.log(totalPaid, amount_balance, paid_status);
+
+    await Invoices.update({
+        amount_paid: totalPaid,
+        amount_balance,
+        paid_status,
+        updatedBy: loggedUser
+    }, {
+        where: {
+            id: id
+        }
+    });
+}
+
+//***create receipt***
+const createReceipt = async (invoice, payData, newAmountBalance, loggedUser) => {
+
+    const {
+        id,
+        property_id,
+        unit_no,
+        property_name,
+        rent_period,
+        rent_amount,
+        services_amount,
+        amount_bf,
+        amount_paid,
+        amount_balance
+    } = invoice;
+    const { payment_method, paid } = payData;
+
+    return await Receipts.create({
+        invoice_id: id,
+        property_id,
+        property_name,
+        unit_no,
+        rent_period,
+        rent_amount,
+        services_amount,
+        amount_bf,
+        already_paid: amount_paid,
+        amount_owed: amount_balance,
+        paid,
+        payment_method,
+        amount_balance: newAmountBalance,
+        date_issued: new Date(),
+        createdBy: loggedUser
+    });
+}
+
 // PAY FOR AN INVOICE
 router.post('/pay/:invoice_id', [auth, landlord], async (req, res) => {
-    const invoice = await fetchInvoice(req.params.invoice_id);
+
+    const amountPaid = req.body.amount_paid || 0;
+    const paymentMethod = req.body.payment_method;
+    const invoiceId = req.params.invoice_id;
+    const loggedUser = req.user.id;
+    if (!parseInt(amountPaid)) return res.status(400).json({'Error': 'Please insert a figure larger that zero!'});
+
+    const invoice = await fetchInvoice(invoiceId);
     if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
 
-    res.status(201).json({data: invoice});
+    const { amount_balance } = invoice.dataValues;
+    const newAmountBalance = amount_balance - amountPaid;
+    const payData = { paid: amountPaid, payment_method: paymentMethod }
+
+    const receipt = await createReceipt(invoice, payData, newAmountBalance, loggedUser);
+    await updateInvoice(invoice, receipt, loggedUser);
+
+    res.status(201).json({results: receipt});
 })
 module.exports = router;

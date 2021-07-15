@@ -16,6 +16,7 @@ app.set('view engine', 'handlebars');
 const sequelize = require('./startup/db');
 const initModel1 = require('./models/invbreakModel');
 const initModel2 = require('./models/tenantPropsModel');
+const initModel3 = require('./models/receiptModel');
 
 // CALL TO ROUTES FOLDER
 require('./startup/routes')(app);
@@ -28,6 +29,7 @@ let server = null;
         await sequelize.sync();
         await initModel1.sync();
         await initModel2.sync();
+        await initModel3.sync();
 
         const port = process.env.PORT || 3000 ;
         server = app.listen( port, console.log(`listening to port ${port}`));
