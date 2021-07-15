@@ -362,6 +362,24 @@ const invoiceBreakdownServices = async (propertyID) => {
     return servicesTotal;
 };
 
+//***fetch an invoice by ID (invoice num)***
+const fetchInvoice = async (invoiceID) => {
+    return await Invoices.findOne({
+        where: {
+            id: invoiceID
+        },
+        include: [
+            {
+                model: InvBreaks,
+                as: 'invoice_breakdowns',
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            }
+        ]
+    });
+};
+
 // EDIT INVOICE BREAKDOWN SERVICES
 router.post('/edit/service', [auth, landlord], async (req, res) => {
 
@@ -414,20 +432,7 @@ router.post('/edit/service', [auth, landlord], async (req, res) => {
 // FETCH SINGLE INVOICE DETAILS
 router.get('/single/:invoice_id', [auth, tenant], async (req, res) => {
 
-    const invoice = await Invoices.findOne({
-        where: {
-            id: req.params.invoice_id
-        },
-        include: [
-            {
-                model: InvBreaks,
-                as: 'invoice_breakdowns',
-                attributes: {
-                    exclude: ['createdAt', 'updatedAt']
-                }
-            }
-        ]
-    });
+    const invoice = await fetchInvoice(req.params.invoice_id);
     if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
 
     const tenantInfo = await tenantDetails(invoice.tenant_id);
@@ -516,18 +521,23 @@ router.post('/send', [auth, landlord], async (req, res) => {
         console.log('>>> status code:', res.statusCode);
     });
     request.on('error', (err) => {
-        console.error('problem with request: ' + err.message);
+        console.error(`problem with request: ${err.message}`);
     });
     request.end();
 
     // generate invoice PDF
-    const link = url.format({
-        protocol: req.protocol,
-        // host: req.get('host'),
-        host: `localhost:${process.env.PORT}`,
-        pathname: '/docs/invoice'
-    });
-    const invoicePDF = await documents.generateInvoicePDF(link);
+    const urlLink = new URL ('http://localhost');
+    urlLink.protocol = req.protocol;
+    urlLink.port = process.env.PORT;
+    urlLink.pathname = '/docs/invoice';
+
+    // const link = url.format({
+    //     protocol: req.protocol,
+    //     // host: req.get('host'),
+    //     host: `localhost:${process.env.PORT}`,
+    //     pathname: '/docs/invoice'
+    // });
+    const invoicePDF = await documents.generateInvoicePDF(urlLink.href);
 
     const [areaCode, phoneNum] = tenantInfo.phone.split(' ');
     const tenantPhoneNumber = `${areaCode}${phoneNum}`;
@@ -563,4 +573,11 @@ router.post('/reset/dateIssued', [auth, landlord], async (req, res) => {
     res.status(200).json({ 'results': response });
 });
 
+// PAY FOR AN INVOICE
+router.post('/pay/:invoice_id', [auth, landlord], async (req, res) => {
+    const invoice = await fetchInvoice(req.params.invoice_id);
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
+
+    res.status(201).json({data: invoice});
+})
 module.exports = router;
