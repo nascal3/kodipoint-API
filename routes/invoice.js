@@ -5,8 +5,8 @@ const url = require('url');
 const http = require('http');
 const { format, parseISO, sub } = require('date-fns');
 
-const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
+const sequelize = require('sequelize');
+const Op = sequelize.Op;
 
 const auth = require('../middleware/auth');
 const landlord = require('../middleware/landlordAuth');
@@ -363,6 +363,18 @@ const invoiceBreakdownServices = async (propertyID) => {
     return servicesTotal;
 };
 
+//***fetch latest invoice of a property***
+const latestInvoice = async (propertyId, unitNo) => {
+    return await Invoices.findOne({
+        attributes: [[sequelize.fn('MAX', sequelize.col('id')), 'id']],
+        where: {
+            property_id: propertyId,
+            unit_no: unitNo
+        },
+        raw: true
+    });
+}
+
 //***fetch an invoice by ID (invoice num)***
 const fetchInvoice = async (invoiceID) => {
     return await Invoices.findOne({
@@ -633,13 +645,18 @@ const createReceipt = async (invoice, payData, newAmountBalance, loggedUser) => 
 }
 
 // PAY FOR AN INVOICE
-router.post('/pay/:invoice_id', [auth, landlord], async (req, res) => {
+router.post('/pay', [auth, landlord], async (req, res) => {
 
     const amountPaid = req.body.amount_paid || 0;
+    const propertyId = req.body.property_id;
+    const unitNo = req.body.unit_no;
     const paymentMethod = req.body.payment_method;
-    const invoiceId = req.params.invoice_id;
     const loggedUser = req.user.id;
+
     if (!parseInt(amountPaid)) return res.status(400).json({'Error': 'Please insert a figure larger that zero!'});
+
+    const invoiceResults = await latestInvoice(propertyId, unitNo);
+    const invoiceId = invoiceResults.id;
 
     const invoice = await fetchInvoice(invoiceId);
     if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
