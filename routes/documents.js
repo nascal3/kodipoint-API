@@ -3,6 +3,7 @@ const router = express.Router();
 const puppeteer = require('puppeteer');
 require('express-async-errors');
 
+/* set invoice data */
 let invoiceData = null;
 const setInvoiceData = (data) => {
     invoiceData = data;
@@ -14,7 +15,19 @@ router.get('/invoice', async (req, res) => {
     res.render('invoiceTemplate', jsonData);
 });
 
-const generateInvoicePDF = async (url) => {
+/* set receipt data */
+let receiptData = null;
+const setReceiptData = (data) => {
+    receiptData = data;
+}
+
+/* receipt template page path */
+router.get('/receipt', async (req, res) => {
+    const jsonData = JSON.parse(receiptData);
+    res.render('receiptTemplate', jsonData);
+});
+
+const generatePDF = async (url) => {
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: '/usr/bin/chromium-browser',
@@ -38,7 +51,7 @@ const generateInvoicePDF = async (url) => {
             printBackground: true
         });
         await page.emulateMediaType('screen');
-        console.log('>>> created invoice document');
+        console.log('>>> created PDF document');
         await browser.close();
         return pdf;
     } catch (err) {
@@ -49,5 +62,6 @@ const generateInvoicePDF = async (url) => {
 module.exports = {
     router: router,
     setInvoiceData: setInvoiceData,
-    generateInvoicePDF: generateInvoicePDF
+    setReceiptData: setReceiptData,
+    generatePDF: generatePDF
 };

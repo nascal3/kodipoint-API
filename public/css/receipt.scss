@@ -1,0 +1,255 @@
+body{
+  font-family: 'Poppins', sans-serif;
+  border-top: 5px solid #E75235;
+  padding: 0 35px;
+  background-color: #FFFFFF;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.company-info {
+  display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+}
+.company-logo {
+  width: 60px;
+  height: 60px;
+
+  .logo {
+    max-width: 100%;
+  }
+}
+
+.company-contacts {
+  margin-left: 10px;
+
+  div {
+    font-size: 13px;
+    font-weight: 300;
+  }
+  div:first-child {
+    font-size: 30px;
+    text-transform: uppercase;
+  }
+}
+
+.receipt-info {
+  text-align: right;
+
+  div {
+    &:first-child {
+      text-transform: uppercase;
+      font-size: 35px;
+      font-weight: 600;
+    }
+    &:nth-child(2) {
+      font-size: 16px;
+      & span {
+        font-size: 16px;
+      }
+    }
+    &:nth-child(3) {
+      font-size: 16px;
+      margin-bottom: 10px;
+      & span {
+        font-size: 16px;
+      }
+    }
+  }
+
+  div {
+    font-size: 12px;
+    font-weight: 300;
+
+    span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+  }
+}
+
+.receipt-balance {
+  background-color: #E75235;
+  color: #FFFFFF;
+  padding: 5px 10px;
+  margin-top: 5px;
+  text-transform: uppercase;
+
+  div:first-child {
+    font-size: 12px;
+    font-weight: 300;
+  }
+
+  div:last-child {
+    font-size: 24px;
+    font-weight: 600;
+
+    span {
+      text-transform: capitalize;
+      font-size: 24px;
+      font-weight: 600;
+    }
+  }
+}
+
+.property {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+.tenant-info {
+  margin-top: 15px;
+  padding: 20px 0 10px 0;
+  border-top: 1px solid #dddddd;
+
+  .tenant-contacts {
+    div:first-child {
+      text-transform: uppercase;
+    }
+
+    div {
+      font-size: 12px;
+      font-weight: 300;
+      margin-bottom: 3px;
+    }
+
+    div:nth-child(2) {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    div:last-child {
+      margin-top: 5px;
+      text-transform: capitalize;
+      font-size: 13px;
+      font-weight: 600;
+
+      span{
+        text-transform: uppercase;
+        font-size: 12px;
+        font-weight: 300;
+      }
+    }
+  }
+}
+
+.breakdown-table {
+  position: relative;
+
+  .total-divider {
+    margin: 0;
+    border-bottom: 3px solid #E75235;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+
+    &.rent-cost {
+      tr {
+        th {
+          text-align: left;
+          font-size: 18px;
+          text-transform: uppercase;
+          padding: 5px 20px 5px 20px;
+          border-bottom: 1px solid #dddddd;
+          background-color: #E75235;
+          color: #FFFFFF;
+          width: 60%;
+
+          &:last-child {
+            text-align: center;
+          }
+        }
+
+        td {
+          width: 40%;
+          padding: 5px 20px 5px 20px;
+          text-transform: capitalize;
+          border-right: 1px solid #dddddd;
+          &:last-child {
+            border-right: none;
+            text-align: right;
+          }
+        }
+      }
+    }
+
+    &.services-cost {
+      tr {
+        td {
+          padding: 5px 20px 5px 20px;
+          text-transform: capitalize;
+          border-right: 1px solid #dddddd;
+          &:first-child {
+            width: 60%;
+          }
+          &:last-child {
+            width: 40%;
+            border-right: none;
+            text-align: right;
+          }
+        }
+      }
+    }
+
+    &.total-cost {
+      position: absolute;
+      right: 0;
+      width: 40%;
+      tr {
+        td {
+          padding: 15px 20px;
+          text-transform: capitalize;
+          border-right: 1px solid #dddddd;
+          &:first-child {
+            font-weight: 500;
+            width: 60%;
+          }
+          &:last-child {
+            width: 40%;
+            border-right: none;
+            text-align: right;
+          }
+        }
+
+        &:nth-child(3) {
+          border-top: 1px solid #000000;
+          border-bottom: 3px solid #E75235;
+          td:first-child {
+            color: #59B61C;
+            font-weight: 400;
+          }
+        }
+        &:last-child {
+          background-color: #FFFFFF;
+          font-weight: 600;
+        }
+      }
+    }
+
+    tr:nth-child(even) {
+      background-color: #F5F5F5;
+    }
+  }
+}
+
+footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  color: #FFFFFF;
+  width: 100%;
+  background-color: #E75235;
+  text-align: center;
+  padding: 5px;
+  font-size: 10px;
+}
+

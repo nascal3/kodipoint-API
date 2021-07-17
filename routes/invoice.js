@@ -5,8 +5,8 @@ const url = require('url');
 const http = require('http');
 const { format, parseISO, sub } = require('date-fns');
 
-const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
+const sequelize = require('sequelize');
+const Op = sequelize.Op;
 
 const auth = require('../middleware/auth');
 const landlord = require('../middleware/landlordAuth');
@@ -14,6 +14,7 @@ const tenant = require('../middleware/tenantAuth');
 
 const Invoices = require('../models/invoiceModel');
 const InvBreaks = require('../models/invbreakModel');
+const Receipts = require('../models/receiptModel');
 const Tenants = require('../models/tenantModel');
 const TenantProps = require('../models/tenantPropsModel');
 const Services = require('../models/serviceModel');
@@ -299,7 +300,7 @@ router.post('/create', [auth, landlord], async (req, res) => {
     const unitNo = req.body.unit_no;
     const rentPeriod = req.body.rent_period;
     const dateDue = req.body.date_due;
-    const amountPaid = !req.body.amount_paid ? 0 : req.body.amount_paid;
+    const amountPaid =  req.body.amount_paid || 0;
     const amountBroughtForward = req.body.amount_bf;
     const loggedUser = req.user.id;
 
@@ -362,6 +363,36 @@ const invoiceBreakdownServices = async (propertyID) => {
     return servicesTotal;
 };
 
+//***fetch latest invoice of a property***
+const latestInvoice = async (propertyId, unitNo) => {
+    return await Invoices.findOne({
+        attributes: [[sequelize.fn('MAX', sequelize.col('id')), 'id']],
+        where: {
+            property_id: propertyId,
+            unit_no: unitNo
+        },
+        raw: true
+    });
+}
+
+//***fetch an invoice by ID (invoice num)***
+const fetchInvoice = async (invoiceID) => {
+    return await Invoices.findOne({
+        where: {
+            id: invoiceID
+        },
+        include: [
+            {
+                model: InvBreaks,
+                as: 'invoice_breakdowns',
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            }
+        ]
+    });
+};
+
 // EDIT INVOICE BREAKDOWN SERVICES
 router.post('/edit/service', [auth, landlord], async (req, res) => {
 
@@ -414,20 +445,7 @@ router.post('/edit/service', [auth, landlord], async (req, res) => {
 // FETCH SINGLE INVOICE DETAILS
 router.get('/single/:invoice_id', [auth, tenant], async (req, res) => {
 
-    const invoice = await Invoices.findOne({
-        where: {
-            id: req.params.invoice_id
-        },
-        include: [
-            {
-                model: InvBreaks,
-                as: 'invoice_breakdowns',
-                attributes: {
-                    exclude: ['createdAt', 'updatedAt']
-                }
-            }
-        ]
-    });
+    const invoice = await fetchInvoice(req.params.invoice_id);
     if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
 
     const tenantInfo = await tenantDetails(invoice.tenant_id);
@@ -462,7 +480,73 @@ const smsDateYearFormat = (date) => {
 
 //***format invoice SMS message***
 const smsInvoiceMessage = (data) => {
-  return `Dear ${data.name}, your rent invoice for ${data.property_name.toUpperCase()}, Unit no: ${data.unit_no.toUpperCase()}, ${smsDateYearFormat(data.rent_period)}.\nInvoice no: #${data.id}. Rent: Ksh${data.rent_amount}, Balance Brought Forward: Ksh${data.amount_bf}, Service Total: Ksh${data.services_amount}, Amount Paid: Ksh${data.amount_paid}, Amount Due: Ksh${data.amount_balance}. Due Date:${smsDateMonthFormat(data.date_due)}.`;
+  const {
+      name,
+      property_name,
+      unit_no,
+      rent_period,
+      id,
+      rent_amount,
+      amount_bf,
+      services_amount,
+      amount_paid,
+      amount_balance,
+      date_due
+  } = data;
+  return `Dear ${name}, your rent invoice for ${property_name.toUpperCase()}, Unit no: ${unit_no.toUpperCase()}, ${smsDateYearFormat(rent_period)}.\nInvoice no: #${id}. Rent: Ksh${rent_amount}, Balance Brought Forward: Ksh${amount_bf}, Service Total: Ksh${services_amount}, Amount Paid: Ksh${amount_paid}, Amount Due: Ksh${amount_balance}. Due Date:${smsDateMonthFormat(date_due)}.`;
+}
+
+//***format receipt SMS message***
+const smsReceiptMessage = (data) => {
+    const {
+        name,
+        property_name,
+        unit_no,
+        rent_period,
+        receipt_num,
+        paid,
+        amount_balance,
+        rent_amount,
+        services_amount,
+        updatedAt
+    } = data;
+    return `Dear ${name}, your payment for ${property_name.toUpperCase()}, Unit no: ${unit_no.toUpperCase()}, ${smsDateYearFormat(rent_period)}.\nReceipt no: #${receipt_num}. Amount Paid: Ksh${paid}, Balance Brought Forward: Ksh${amount_balance}, Rent Amount: Ksh${rent_amount}, Service Total: Ksh${services_amount}. Pay Date:${smsDateMonthFormat(updatedAt)}.`;
+}
+
+//***visit document page to place data in template***
+const visitTemplatePage = (req, path) => {
+    const options = {
+        port: process.env.PORT,
+        path,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            "Access-Control-Allow-Origin": "*"
+        }
+    };
+    const request = http.request( options, (res) => {
+        res.setEncoding('utf8');
+        console.log('>>> status code:', res.statusCode);
+    });
+    request.on('error', (err) => {
+        console.error(`problem with request: ${err.message}`);
+    });
+    request.end();
+
+    // generate invoice PDF
+    const urlLink = new URL ('http://localhost');
+    urlLink.protocol = req.protocol;
+    urlLink.port = process.env.PORT;
+    urlLink.pathname = path;
+
+    // const link = url.format({
+    //     protocol: req.protocol,
+    //     // host: req.get('host'),
+    //     host: `localhost:${process.env.PORT}`,
+    //     pathname: '/docs/invoice'
+    // });
+
+    return urlLink.href;
 }
 
 // GENERATE INVOICE PDF & SEND TO TENANT
@@ -501,33 +585,10 @@ router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceData = {...tenantInfo, ...invoice.dataValues};
     documents.setInvoiceData(JSON.stringify(invoiceData))
 
-    // add tenant data to invoice template
-    const options = {
-        port: process.env.PORT,
-        path: `/docs/invoice`,
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json;charset=UTF-8',
-            "Access-Control-Allow-Origin": "*"
-        }
-    };
-    const request = http.request( options, (res) => {
-        res.setEncoding('utf8');
-        console.log('>>> status code:', res.statusCode);
-    });
-    request.on('error', (err) => {
-        console.error('problem with request: ' + err.message);
-    });
-    request.end();
+    const path = `/docs/invoice`;
+    const url = visitTemplatePage(req, path);
 
-    // generate invoice PDF
-    const link = url.format({
-        protocol: req.protocol,
-        // host: req.get('host'),
-        host: `localhost:${process.env.PORT}`,
-        pathname: '/docs/invoice'
-    });
-    const invoicePDF = await documents.generateInvoicePDF(link);
+    const invoicePDF = await documents.generatePDF(url);
 
     const [areaCode, phoneNum] = tenantInfo.phone.split(' ');
     const tenantPhoneNumber = `${areaCode}${phoneNum}`;
@@ -561,6 +622,134 @@ router.post('/reset/dateIssued', [auth, landlord], async (req, res) => {
     });
 
     res.status(200).json({ 'results': response });
+});
+
+//***update invoice with receipt payment***
+const updateInvoice = async (invoice, receipt, loggedUser) => {
+
+    const { id } = invoice;
+    const { paid, already_paid, amount_balance } = receipt;
+    const totalPaid = paid + already_paid;
+
+    const paid_status = amount_balance <= 0 ? 'full' : 'partial';
+    console.log(totalPaid, amount_balance, paid_status);
+
+    await Invoices.update({
+        amount_paid: totalPaid,
+        amount_balance,
+        paid_status,
+        updatedBy: loggedUser
+    }, {
+        where: {
+            id: id
+        }
+    });
+}
+
+//***create receipt***
+const createReceipt = async (invoice, payData, newAmountBalance, loggedUser) => {
+
+    const {
+        id,
+        property_id,
+        tenant_id,
+        unit_no,
+        property_name,
+        rent_period,
+        rent_amount,
+        services_amount,
+        amount_bf,
+        amount_paid,
+        amount_balance
+    } = invoice;
+    const { payment_method, paid } = payData;
+
+    return await Receipts.create({
+        invoice_id: id,
+        property_id,
+        tenant_id,
+        property_name,
+        unit_no,
+        rent_period,
+        rent_amount,
+        services_amount,
+        amount_bf,
+        already_paid: amount_paid,
+        amount_owed: amount_balance,
+        paid,
+        payment_method,
+        amount_balance: newAmountBalance,
+        date_issued: new Date(),
+        createdBy: loggedUser
+    });
+}
+
+//***generate receipt PDF***
+const generateReceiptPDF = async (req, receiptData, invoiceData) => {
+
+    const { tenant_id, id } = receiptData;
+    const tenantInfo =  await tenantDetails(tenant_id);
+
+    const receiptInfo = {receipt_num: id, ...tenantInfo, ...receiptData, ...invoiceData};
+    delete receiptInfo.date_issued;
+    delete receiptInfo.amount_paid;
+    delete receiptInfo.createdAt;
+    delete receiptInfo.id;
+
+    console.log(receiptInfo);
+    documents.setReceiptData(JSON.stringify(receiptInfo));
+
+    const path = `/docs/receipt`;
+    const url = visitTemplatePage(req, path);
+
+    const receiptPDF = await documents.generatePDF(url);
+    const { phone, name } = tenantInfo;
+
+    const [areaCode, phoneNum] = phone.split(' ');
+    const tenantPhoneNumber = `${areaCode}${phoneNum}`;
+    const smsMessage = smsReceiptMessage(receiptData);
+
+    const { email } = await landlordInfo(invoice.landlord_id);
+
+    const smsResponse = await sendSMS(tenantPhoneNumber, smsMessage);
+    const emailResponse = await sendEmail(
+        tenantInfo.email,
+        email,
+        'Tenant rent payment receipt.',
+        `Dear ${name}, here is your rent payment receipt.`,
+        'Rent receipt.pdf',
+        receiptPDF
+    );
+
+}
+
+// PAY FOR AN INVOICE
+router.post('/pay', [auth, landlord], async (req, res) => {
+
+    const amountPaid = req.body.amount_paid || 0;
+    const propertyId = req.body.property_id;
+    const unitNo = req.body.unit_no;
+    const paymentMethod = req.body.payment_method;
+    const loggedUser = req.user.id;
+
+    if (!parseInt(amountPaid)) return res.status(400).json({'Error': 'Please insert a figure larger that zero!'});
+
+    const invoiceResults = await latestInvoice(propertyId, unitNo);
+    const invoiceId = invoiceResults.id;
+
+    const invoice = await fetchInvoice(invoiceId);
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
+
+    const { amount_balance } = invoice.dataValues;
+    const newAmountBalance = amount_balance - amountPaid;
+    const payData = { paid: amountPaid, payment_method: paymentMethod }
+
+    const receipt = await createReceipt(invoice, payData, newAmountBalance, loggedUser);
+    await updateInvoice(invoice, receipt, loggedUser);
+
+    await generateReceiptPDF(req, receipt.dataValues, invoice.dataValues);
+
+    res.status(201).json({results: receipt});
 });
 
 module.exports = router;

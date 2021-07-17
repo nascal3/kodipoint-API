@@ -1,25 +1,22 @@
 const Sequelize = require('sequelize');
 const connection = require('../startup/db');
+const invoiceModel = require('./invoiceModel');
 const tenantModel = require('./tenantModel');
 const propertyModel = require('./propertyModel');
 const userModel = require('./userModel');
 
-const invoiceModel = connection.define('invoice', {
+const receiptModel = connection.define('receipt', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
-    tenant_id: {
+    invoice_id: {
         type: Sequelize.INTEGER,
         references: {
-            model: tenantModel,
-            key: tenantModel.id
+            model: invoiceModel,
+            key: invoiceModel.id
         },
-        allowNull: false
-    },
-    landlord_id: {
-        type: Sequelize.INTEGER,
         allowNull: false
     },
     property_id: {
@@ -27,6 +24,14 @@ const invoiceModel = connection.define('invoice', {
         references: {
             model: propertyModel,
             key: propertyModel.id
+        },
+        allowNull: false
+    },
+    tenant_id: {
+        type: Sequelize.INTEGER,
+        references: {
+            model: tenantModel,
+            key: tenantModel.id
         },
         allowNull: false
     },
@@ -46,15 +51,16 @@ const invoiceModel = connection.define('invoice', {
         type:Sequelize.DATE,
         allowNull: true
     },
-    date_due: {
-        type:Sequelize.DATE,
-        allowNull: false
-    },
     rent_amount: {
         type:Sequelize.INTEGER,
         allowNull: false
     },
     amount_bf: {
+        type:Sequelize.INTEGER,
+        defaultValue: 0,
+        allowNull: false
+    },
+    already_paid: {
         type:Sequelize.INTEGER,
         defaultValue: 0,
         allowNull: false
@@ -68,7 +74,11 @@ const invoiceModel = connection.define('invoice', {
         defaultValue: 0,
         allowNull: false
     },
-    amount_paid: {
+    payment_method: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    paid: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
         allowNull: false
@@ -77,11 +87,6 @@ const invoiceModel = connection.define('invoice', {
         type: Sequelize.INTEGER,
         allowNull: false
     },
-    paid_status: {
-        type: Sequelize.ENUM,
-        values: ['partial', 'full'],
-        allowNull: true
-    },
     createdBy: {
         type: Sequelize.INTEGER,
         references: {
@@ -89,14 +94,6 @@ const invoiceModel = connection.define('invoice', {
             key: userModel.id
         },
         allowNull: false
-    },
-    updatedBy: {
-        type: Sequelize.INTEGER,
-        references: {
-            model: userModel,
-            key: userModel.id
-        },
-        allowNull: true
     },
 },{
     indexes:[
@@ -107,4 +104,4 @@ const invoiceModel = connection.define('invoice', {
     ]
 });
 
-module.exports = invoiceModel;
+module.exports = receiptModel;
