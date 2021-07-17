@@ -32,6 +32,7 @@ module.exports = (app) => {
   app.use('/api/tenantsrec', tenantsProps);
   app.use('/api/properties', properties.router);
   app.use('/api/invoice', invoice);
+  app.use('/api/receipt', invoice);
   app.use('/docs', documents.router);
   app.use('/api/google', googleAuth);
   app.use(express.static('public'));

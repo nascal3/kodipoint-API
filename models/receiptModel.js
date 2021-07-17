@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const connection = require('../startup/db');
 const invoiceModel = require('./invoiceModel');
+const tenantModel = require('./tenantModel');
 const propertyModel = require('./propertyModel');
 const userModel = require('./userModel');
 
@@ -23,6 +24,14 @@ const receiptModel = connection.define('receipt', {
         references: {
             model: propertyModel,
             key: propertyModel.id
+        },
+        allowNull: false
+    },
+    tenant_id: {
+        type: Sequelize.INTEGER,
+        references: {
+            model: tenantModel,
+            key: tenantModel.id
         },
         allowNull: false
     },

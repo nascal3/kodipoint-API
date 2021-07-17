@@ -480,7 +480,73 @@ const smsDateYearFormat = (date) => {
 
 //***format invoice SMS message***
 const smsInvoiceMessage = (data) => {
-  return `Dear ${data.name}, your rent invoice for ${data.property_name.toUpperCase()}, Unit no: ${data.unit_no.toUpperCase()}, ${smsDateYearFormat(data.rent_period)}.\nInvoice no: #${data.id}. Rent: Ksh${data.rent_amount}, Balance Brought Forward: Ksh${data.amount_bf}, Service Total: Ksh${data.services_amount}, Amount Paid: Ksh${data.amount_paid}, Amount Due: Ksh${data.amount_balance}. Due Date:${smsDateMonthFormat(data.date_due)}.`;
+  const {
+      name,
+      property_name,
+      unit_no,
+      rent_period,
+      id,
+      rent_amount,
+      amount_bf,
+      services_amount,
+      amount_paid,
+      amount_balance,
+      date_due
+  } = data;
+  return `Dear ${name}, your rent invoice for ${property_name.toUpperCase()}, Unit no: ${unit_no.toUpperCase()}, ${smsDateYearFormat(rent_period)}.\nInvoice no: #${id}. Rent: Ksh${rent_amount}, Balance Brought Forward: Ksh${amount_bf}, Service Total: Ksh${services_amount}, Amount Paid: Ksh${amount_paid}, Amount Due: Ksh${amount_balance}. Due Date:${smsDateMonthFormat(date_due)}.`;
+}
+
+//***format receipt SMS message***
+const smsReceiptMessage = (data) => {
+    const {
+        name,
+        property_name,
+        unit_no,
+        rent_period,
+        receipt_num,
+        paid,
+        amount_balance,
+        rent_amount,
+        services_amount,
+        updatedAt
+    } = data;
+    return `Dear ${name}, your payment for ${property_name.toUpperCase()}, Unit no: ${unit_no.toUpperCase()}, ${smsDateYearFormat(rent_period)}.\nReceipt no: #${receipt_num}. Amount Paid: Ksh${paid}, Balance Brought Forward: Ksh${amount_balance}, Rent Amount: Ksh${rent_amount}, Service Total: Ksh${services_amount}. Pay Date:${smsDateMonthFormat(updatedAt)}.`;
+}
+
+//***visit document page to place data in template***
+const visitTemplatePage = (req, path) => {
+    const options = {
+        port: process.env.PORT,
+        path,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            "Access-Control-Allow-Origin": "*"
+        }
+    };
+    const request = http.request( options, (res) => {
+        res.setEncoding('utf8');
+        console.log('>>> status code:', res.statusCode);
+    });
+    request.on('error', (err) => {
+        console.error(`problem with request: ${err.message}`);
+    });
+    request.end();
+
+    // generate invoice PDF
+    const urlLink = new URL ('http://localhost');
+    urlLink.protocol = req.protocol;
+    urlLink.port = process.env.PORT;
+    urlLink.pathname = path;
+
+    // const link = url.format({
+    //     protocol: req.protocol,
+    //     // host: req.get('host'),
+    //     host: `localhost:${process.env.PORT}`,
+    //     pathname: '/docs/invoice'
+    // });
+
+    return urlLink.href;
 }
 
 // GENERATE INVOICE PDF & SEND TO TENANT
@@ -519,38 +585,10 @@ router.post('/send', [auth, landlord], async (req, res) => {
     const invoiceData = {...tenantInfo, ...invoice.dataValues};
     documents.setInvoiceData(JSON.stringify(invoiceData))
 
-    // add tenant data to invoice template
-    const options = {
-        port: process.env.PORT,
-        path: `/docs/invoice`,
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json;charset=UTF-8',
-            "Access-Control-Allow-Origin": "*"
-        }
-    };
-    const request = http.request( options, (res) => {
-        res.setEncoding('utf8');
-        console.log('>>> status code:', res.statusCode);
-    });
-    request.on('error', (err) => {
-        console.error(`problem with request: ${err.message}`);
-    });
-    request.end();
+    const path = `/docs/invoice`;
+    const url = visitTemplatePage(req, path);
 
-    // generate invoice PDF
-    const urlLink = new URL ('http://localhost');
-    urlLink.protocol = req.protocol;
-    urlLink.port = process.env.PORT;
-    urlLink.pathname = '/docs/invoice';
-
-    // const link = url.format({
-    //     protocol: req.protocol,
-    //     // host: req.get('host'),
-    //     host: `localhost:${process.env.PORT}`,
-    //     pathname: '/docs/invoice'
-    // });
-    const invoicePDF = await documents.generateInvoicePDF(urlLink.href);
+    const invoicePDF = await documents.generatePDF(url);
 
     const [areaCode, phoneNum] = tenantInfo.phone.split(' ');
     const tenantPhoneNumber = `${areaCode}${phoneNum}`;
@@ -614,6 +652,7 @@ const createReceipt = async (invoice, payData, newAmountBalance, loggedUser) => 
     const {
         id,
         property_id,
+        tenant_id,
         unit_no,
         property_name,
         rent_period,
@@ -628,6 +667,7 @@ const createReceipt = async (invoice, payData, newAmountBalance, loggedUser) => 
     return await Receipts.create({
         invoice_id: id,
         property_id,
+        tenant_id,
         property_name,
         unit_no,
         rent_period,
@@ -642,6 +682,45 @@ const createReceipt = async (invoice, payData, newAmountBalance, loggedUser) => 
         date_issued: new Date(),
         createdBy: loggedUser
     });
+}
+
+//***generate receipt PDF***
+const generateReceiptPDF = async (req, receiptData, invoiceData) => {
+
+    const { tenant_id, id } = receiptData;
+    const tenantInfo =  await tenantDetails(tenant_id);
+
+    const receiptInfo = {receipt_num: id, ...tenantInfo, ...receiptData, ...invoiceData};
+    delete receiptInfo.date_issued;
+    delete receiptInfo.amount_paid;
+    delete receiptInfo.createdAt;
+    delete receiptInfo.id;
+
+    console.log(receiptInfo);
+    documents.setReceiptData(JSON.stringify(receiptInfo));
+
+    const path = `/docs/receipt`;
+    const url = visitTemplatePage(req, path);
+
+    const receiptPDF = await documents.generatePDF(url);
+    const { phone, name } = tenantInfo;
+
+    const [areaCode, phoneNum] = phone.split(' ');
+    const tenantPhoneNumber = `${areaCode}${phoneNum}`;
+    const smsMessage = smsReceiptMessage(receiptData);
+
+    const { email } = await landlordInfo(invoice.landlord_id);
+
+    const smsResponse = await sendSMS(tenantPhoneNumber, smsMessage);
+    const emailResponse = await sendEmail(
+        tenantInfo.email,
+        email,
+        'Tenant rent payment receipt.',
+        `Dear ${name}, here is your rent payment receipt.`,
+        'Rent receipt.pdf',
+        receiptPDF
+    );
+
 }
 
 // PAY FOR AN INVOICE
@@ -668,6 +747,9 @@ router.post('/pay', [auth, landlord], async (req, res) => {
     const receipt = await createReceipt(invoice, payData, newAmountBalance, loggedUser);
     await updateInvoice(invoice, receipt, loggedUser);
 
+    await generateReceiptPDF(req, receipt.dataValues, invoice.dataValues);
+
     res.status(201).json({results: receipt});
-})
+});
+
 module.exports = router;

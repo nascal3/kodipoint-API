@@ -1,0 +1,101 @@
+<!-- receipt.css -->
+<link rel="stylesheet" href="../css/receipt.css" type="text/css">
+
+<section class="header">
+<!--    company logo and contacts-->
+     <div class="company-info">
+         <div class="company-logo">
+             <img class="logo" src="../img/kodiPoint_logo.png" alt="KodiPoint logo">
+         </div>
+         <div class="company-contacts">
+             <div>KodiPoint</div>
+             <div>(+254) 708 486 139</div>
+             <div>P.O Box: 54679, 00200 Nairobi</div>
+             <div>info@kodipoint.com</div>
+         </div>
+     </div>
+<!--    receipt details e.g date issued, balance due ...-->
+     <div class="receipt-info">
+         <div>receipt</div>
+         <div><span>Receipt #:</span> {{receipt_num}}</div>
+         <div><span>For Invoice #:</span> {{invoice_id}}</div>
+         <div><span>Rent period:</span> {{formatDateMonth rent_period}}</div>
+         <div><span>Due Date:</span> {{formatDate date_due}}</div>
+         <div><span>Date Issued:</span> {{formatDate updatedAt}}</div>
+         <div class="receipt-balance">
+             <div>Balance due:</div>
+             <div><span>Ksh</span> {{thousandsSeparator amount_owed}}</div>
+         </div>
+     </div>
+</section>
+<section class="property">
+    <div class="property-name">
+        {{property_name}}
+    </div>
+</section>
+<section class="tenant-info">
+<!--    tenants contacts-->
+     <div class="tenant-contacts">
+         <div>Bill to:</div>
+         <div>{{name}}</div>
+         <div>{{phone}}</div>
+         <div>{{email}}</div>
+         <div><span>Rental Unit:</span> {{unit_no}}</div>
+     </div>
+</section>
+<section class="breakdown-table">
+<!--  receipt breakdown table  -->
+    <table class="rent-cost">
+        <tr>
+            <th>Description</th>
+            <th>Amount</th>
+        </tr>
+        <tr>
+            <td>Rent</td>
+            <td>{{thousandsSeparator rent_amount}}</td>
+        </tr>
+        <tr>
+            <td>Balance brought forward</td>
+            <td>{{thousandsSeparator amount_bf}}</td>
+        </tr>
+    </table>
+
+    <table class="services-cost">
+        {{#each invoice_breakdowns}}
+            <tr>
+                <td>{{this.service_name}}</td>
+                <td>{{thousandsSeparator this.service_price}}</td>
+            </tr>
+        {{/each}}
+    </table>
+
+    <hr class="total-divider">
+    <table class="total-cost">
+        <tr>
+            <td>Sub total:</td>
+            <td>{{thousandsSeparator amount_owed}}</td>
+        </tr>
+        <tr>
+            <td>Payment method:</td>
+            <td>{{payment_method}}</td>
+        </tr>
+        <tr>
+            <td>Amount paid:</td>
+            <td>{{thousandsSeparator paid}}</td>
+        </tr>
+        {{#if (paidStatus paid_status)}}
+        <tr>
+            <td>Total paid to date:</td>
+            <td>{{thousandsSeparator already_paid}}</td>
+        </tr>
+        {{/if}}
+        <tr>
+            <td>Outstanding balance:</td>
+            <td>{{thousandsSeparator amount_balance}}</td>
+        </tr>
+    </table>
+</section>
+
+<footer>
+    <span>If you have any questions concerning this receipt please contact us.</span>
+</footer>

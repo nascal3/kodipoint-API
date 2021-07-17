@@ -15,6 +15,10 @@ const docHelpers = {
     thousandsSeparator: function(value) {
         if (!value && (value !== 0)) return;
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    },
+
+    paidStatus: function (value) {
+        return !value || value === 'partial';
     }
 }
 

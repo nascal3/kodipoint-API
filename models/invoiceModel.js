@@ -50,10 +50,6 @@ const invoiceModel = connection.define('invoice', {
         type:Sequelize.DATE,
         allowNull: false
     },
-    date_paid: {
-        type: Sequelize.DATE,
-        allowNull: true
-    },
     rent_amount: {
         type:Sequelize.INTEGER,
         allowNull: false
