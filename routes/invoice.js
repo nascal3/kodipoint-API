@@ -494,7 +494,7 @@ const smsInvoiceMessage = (data) => {
       date_due
   } = data;
   return `Dear ${name}, your rent invoice for ${property_name.toUpperCase()}, Unit no: ${unit_no.toUpperCase()}, ${smsDateYearFormat(rent_period)}.\nInvoice no: #${id}. Rent: Ksh${rent_amount}, Balance Brought Forward: Ksh${amount_bf}, Service Total: Ksh${services_amount}, Amount Paid: Ksh${amount_paid}, Amount Due: Ksh${amount_balance}. Due Date:${smsDateMonthFormat(date_due)}.`;
-}
+};
 
 //***format receipt SMS message***
 const smsReceiptMessage = (data) => {
@@ -511,7 +511,7 @@ const smsReceiptMessage = (data) => {
         updatedAt
     } = data;
     return `Dear ${name}, your payment for ${property_name.toUpperCase()}, Unit no: ${unit_no.toUpperCase()}, ${smsDateYearFormat(rent_period)}.\nReceipt no: #${receipt_num}. Amount Paid: Ksh${paid}, Balance Brought Forward: Ksh${amount_balance}, Rent Amount: Ksh${rent_amount}, Service Total: Ksh${services_amount}. Pay Date:${smsDateMonthFormat(updatedAt)}.`;
-}
+};
 
 //***visit document page to place data in template***
 const visitTemplatePage = (req, path) => {
@@ -540,7 +540,7 @@ const visitTemplatePage = (req, path) => {
     urlLink.pathname = path;
 
     return urlLink.href;
-}
+};
 
 // GENERATE INVOICE PDF & SEND TO TENANT
 router.post('/send', [auth, landlord], async (req, res) => {
@@ -637,7 +637,7 @@ const updateInvoice = async (invoice, receipt, loggedUser) => {
             id: id
         }
     });
-}
+};
 
 //***create receipt***
 const createReceipt = async (invoice, payData, newAmountBalance, loggedUser) => {
@@ -675,7 +675,7 @@ const createReceipt = async (invoice, payData, newAmountBalance, loggedUser) => 
         date_issued: new Date(),
         createdBy: loggedUser
     });
-}
+};
 
 //***generate receipt PDF***
 const generateReceiptPDF = async (req, receiptData, invoiceData) => {
@@ -714,7 +714,7 @@ const generateReceiptPDF = async (req, receiptData, invoiceData) => {
     );
 
     return { emailResponse, smsResponse };
-}
+};
 
 // PAY FOR AN INVOICE
 router.post('/pay', [auth, landlord], async (req, res) => {
@@ -745,5 +745,98 @@ router.post('/pay', [auth, landlord], async (req, res) => {
 
     res.status(201).json({data: receipt, email_response: emailResponse, sms_response: smsResponse});
 });
+
+//***fetch receipt by ID(num)***
+const getReceipt = async (receiptNum) => {
+    return await Receipts.findOne({
+        where: {
+            id: receiptNum
+        }, raw: true
+    });
+};
+
+// GENERATE RECEIPT PDF & SEND TO TENANT
+router.post('/receipt/send', [auth, landlord], async (req, res) => {
+    const receiptNum = parseInt(req.body.receipt_num);
+
+    const receipt = await getReceipt(receiptNum);
+    if (!receipt) return res.status(404).json({'Error': 'The following receipt does not exist!'});
+
+    const { invoice_id } = receipt;
+    const invoice = await fetchInvoice(invoice_id);
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
+
+    const messageResponses = await generateReceiptPDF(req, receipt, invoice.dataValues);
+    const { emailResponse, smsResponse } = messageResponses;
+
+    res.status(200).json({data: receipt, email_response: emailResponse, sms_response: smsResponse});
+});
+
+// FETCH SINGLE RECEIPT DETAILS
+router.get('/receipt/:receipt_num', [auth, tenant], async (req, res) => {
+    const receiptNum = req.params.receipt_num;
+
+    const receipt = await getReceipt(parseInt(receiptNum));
+    if (!receipt) return res.status(404).json({'Error': 'The following receipt does not exist!'});
+
+    const { invoice_id, tenant_id, id } = receipt;
+    const tenantInfo =  await tenantDetails(tenant_id);
+    const invoice = await fetchInvoice(invoice_id);
+    if (!invoice) return res.status(404).json({'Error': 'The following invoice does not exist!'});
+
+    const receiptInfo = { receipt_num: id, ...tenantInfo, ...receipt, ...invoice.dataValues };
+    delete receiptInfo.date_issued;
+    delete receiptInfo.amount_paid;
+    delete receiptInfo.createdAt;
+    delete receiptInfo.id;
+
+    res.status(200).json({ results: receiptInfo });
+});
+
+// GET SPECIFIC TENANT RECEIPTS (filtered by date issued)
+router.post('/receipt/tenant/all', [auth, tenant], async (req, res) => {
+
+    const tenantID = req.body.tenant_id;
+    const dateFrom = req.body.date_from || sub(new Date(), { months: 2 });
+    const dateTo = req.body.date_to || new Date();
+
+    let receipts = null;
+    const userRole = req.user.role;
+    let landlordID = null;
+    if (userRole === 'landlord' || userRole === 'landlordTenant') {
+        const { landlord_id } = await mapLandlordID(req.user.id);
+        landlordID = landlord_id
+    }
+
+    if (userRole === 'admin' || userRole === 'superU' || userRole === 'tenant') {
+        receipts = await Receipts.findAll({
+            order: [
+                ['date_issued', 'DESC']
+            ],
+            where: {
+                tenant_id: tenantID,
+                rent_period: {
+                    [Op.between]: [dateFrom, dateTo]
+                }
+            }
+        });
+    } else if (userRole === 'landlord' || userRole === 'landlordTenant') {
+        receipts = await Receipts.findAll({
+            order: [
+                ['date_issued', 'DESC']
+            ],
+            where: {
+                tenant_id: tenantID,
+                landlord_id: landlordID,
+                rent_period: {
+                    [Op.between]: [dateFrom, dateTo]
+                }
+            }
+        });
+    }
+
+    res.status(200).json({ results: receipts});
+});
+
 
 module.exports = router;
