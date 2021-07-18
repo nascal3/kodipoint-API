@@ -539,13 +539,6 @@ const visitTemplatePage = (req, path) => {
     urlLink.port = process.env.PORT;
     urlLink.pathname = path;
 
-    // const link = url.format({
-    //     protocol: req.protocol,
-    //     // host: req.get('host'),
-    //     host: `localhost:${process.env.PORT}`,
-    //     pathname: '/docs/invoice'
-    // });
-
     return urlLink.href;
 }
 
@@ -588,7 +581,7 @@ router.post('/send', [auth, landlord], async (req, res) => {
     const path = `/docs/invoice`;
     const url = visitTemplatePage(req, path);
 
-    const invoicePDF = await documents.generatePDF(url);
+    const invoicePDF = await documents.generatePDF(url, 'invoice');
 
     const [areaCode, phoneNum] = tenantInfo.phone.split(' ');
     const tenantPhoneNumber = `${areaCode}${phoneNum}`;
@@ -696,20 +689,19 @@ const generateReceiptPDF = async (req, receiptData, invoiceData) => {
     delete receiptInfo.createdAt;
     delete receiptInfo.id;
 
-    console.log(receiptInfo);
     documents.setReceiptData(JSON.stringify(receiptInfo));
 
     const path = `/docs/receipt`;
     const url = visitTemplatePage(req, path);
 
-    const receiptPDF = await documents.generatePDF(url);
+    const receiptPDF = await documents.generatePDF(url, 'receipt');
     const { phone, name } = tenantInfo;
 
     const [areaCode, phoneNum] = phone.split(' ');
     const tenantPhoneNumber = `${areaCode}${phoneNum}`;
     const smsMessage = smsReceiptMessage(receiptData);
 
-    const { email } = await landlordInfo(invoice.landlord_id);
+    const { email } = await landlordInfo(invoiceData.landlord_id);
 
     const smsResponse = await sendSMS(tenantPhoneNumber, smsMessage);
     const emailResponse = await sendEmail(
@@ -721,6 +713,7 @@ const generateReceiptPDF = async (req, receiptData, invoiceData) => {
         receiptPDF
     );
 
+    return { emailResponse, smsResponse };
 }
 
 // PAY FOR AN INVOICE
@@ -747,9 +740,10 @@ router.post('/pay', [auth, landlord], async (req, res) => {
     const receipt = await createReceipt(invoice, payData, newAmountBalance, loggedUser);
     await updateInvoice(invoice, receipt, loggedUser);
 
-    await generateReceiptPDF(req, receipt.dataValues, invoice.dataValues);
+    const messageResponses = await generateReceiptPDF(req, receipt.dataValues, invoice.dataValues);
+    const { emailResponse, smsResponse } = messageResponses;
 
-    res.status(201).json({results: receipt});
+    res.status(201).json({data: receipt, email_response: emailResponse, sms_response: smsResponse});
 });
 
 module.exports = router;

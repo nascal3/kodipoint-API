@@ -14,7 +14,7 @@ services:
     - /app/node_modules
     - .:/app
     environment:
-      - DB_HOST=192.168.100.5
+      - DB_HOST=192.168.100.27
       - DB_USER=root
       - DB_PASSWORD=
       - DB_NAME=kodipoint_test

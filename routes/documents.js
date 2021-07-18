@@ -27,7 +27,7 @@ router.get('/receipt', async (req, res) => {
     res.render('receiptTemplate', jsonData);
 });
 
-const generatePDF = async (url) => {
+const generatePDF = async (url, document) => {
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: '/usr/bin/chromium-browser',
@@ -51,7 +51,7 @@ const generatePDF = async (url) => {
             printBackground: true
         });
         await page.emulateMediaType('screen');
-        console.log('>>> created PDF document');
+        console.log(`>>> created ${document} PDF document`);
         await browser.close();
         return pdf;
     } catch (err) {
