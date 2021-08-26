@@ -54,13 +54,13 @@ const invoiceModel = connection.define('invoice', {
         type:Sequelize.INTEGER,
         allowNull: false
     },
+    services_amount: {
+        type:Sequelize.INTEGER,
+        allowNull: false
+    },
     amount_bf: {
         type:Sequelize.INTEGER,
         defaultValue: 0,
-        allowNull: false
-    },
-    services_amount: {
-        type:Sequelize.INTEGER,
         allowNull: false
     },
     amount_owed: {
@@ -79,7 +79,8 @@ const invoiceModel = connection.define('invoice', {
     },
     paid_status: {
         type: Sequelize.ENUM,
-        values: ['partial', 'full'],
+        values: ['not', 'partial', 'full'],
+        defaultValue: 'not',
         allowNull: true
     },
     createdBy: {

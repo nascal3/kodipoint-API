@@ -33,7 +33,8 @@ router.post('/auth', async (req, res) => {
     if (!Object.keys(userProfile).length) return  res.status(400).json({'Error': 'The following user does not exist!'});
     const userPropertyArray = userDetailsArray(userProfile);
 
-    const userData = await findUser(userPropertyArray[5]);
+    const email = userPropertyArray.filter(value => value.includes("@gmail.com"));
+    const userData = await findUser(email[0]);
     if (!Object.keys(userData).length) return res.status(400).json({'Error': 'The following user does not exist!'});
 
     // generate user tokens
