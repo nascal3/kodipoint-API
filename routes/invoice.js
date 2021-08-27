@@ -29,7 +29,7 @@ require('express-async-errors');
 const getInvoiceBF = async (tenantID, propertyID) => {
     const { lastInvoice } = await Invoices.findOne({
         attributes: [
-            [Sequelize.fn('MAX', Sequelize.col('id')), 'lastInvoice']
+            [sequelize.fn('MAX', sequelize.col('id')), 'lastInvoice']
         ],
         where: {
             tenant_id: tenantID,
