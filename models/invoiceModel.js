@@ -77,12 +77,6 @@ const invoiceModel = connection.define('invoice', {
         type: Sequelize.INTEGER,
         allowNull: false
     },
-    paid_status: {
-        type: Sequelize.ENUM,
-        values: ['not', 'partial', 'full'],
-        defaultValue: 'not',
-        allowNull: true
-    },
     createdBy: {
         type: Sequelize.INTEGER,
         references: {

@@ -329,9 +329,9 @@ router.post('/create', [auth, landlord], async (req, res) => {
         date_due: dateDue,
         rent_amount: rentInfo.unit_rent,
         services_amount: servicesTotal,
+        amount_bf: amountBroughtForward,
         amount_owed: rentInfo.unit_rent + servicesTotal + amountBroughtForward,
         amount_paid: amountPaid,
-        amount_bf: amountBroughtForward,
         amount_balance: amountBalance,
         createdBy: loggedUser
     });
